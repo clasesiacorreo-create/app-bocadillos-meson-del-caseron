@@ -1,0 +1,28 @@
+# Dependencias
+node_modules/
+.pnpm-store/
+
+# Next.js
+.next/
+out/
+build/
+next-env.d.ts
+
+# Entorno
+.env
+.env*.local
+
+# Vercel
+.vercel/
+
+# Supabase
+supabase/.temp/
+
+# Pruebas
+coverage/
+playwright-report/
+test-results/
+
+# Sistema
+.DS_Store
+*.log
