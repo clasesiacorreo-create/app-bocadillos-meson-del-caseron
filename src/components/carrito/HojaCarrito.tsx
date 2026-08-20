@@ -3,7 +3,7 @@
 import { HojaInferior } from '@/components/ui/HojaInferior'
 import { useCarrito } from '@/lib/carrito/store'
 import { formatearPrecio } from '@/lib/dinero'
-import { calcularResumen } from '@/lib/precios'
+import { calcularResumen, precioLinea } from '@/lib/precios'
 import type { ReglasPedido } from '@/lib/precios/tipos'
 
 type Props = {
@@ -28,10 +28,15 @@ export function HojaCarrito({ reglas, onCerrar }: Props) {
             {lineas.map((linea) => (
               <li key={linea.id} className="flex gap-3">
                 <div className="min-w-0 flex-1">
-                  <p className="font-semibold">
-                    {linea.nombreArticulo}{' '}
-                    <span className="text-neutral-400">· {linea.nombreTamano}</span>
-                  </p>
+                  <div className="flex items-baseline justify-between gap-2">
+                    <p className="font-semibold">
+                      {linea.nombreArticulo}{' '}
+                      <span className="text-neutral-400">· {linea.nombreTamano}</span>
+                    </p>
+                    <span className="shrink-0 font-medium" data-testid="precio-linea">
+                      {formatearPrecio(precioLinea(linea))}
+                    </span>
+                  </div>
                   {linea.extras.length > 0 && (
                     <p className="text-sm text-neutral-400">
                       {linea.extras.map((extra) => extra.nombre).join(', ')}

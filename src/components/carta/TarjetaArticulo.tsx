@@ -12,7 +12,18 @@ type Props = {
 
 export function TarjetaArticulo({ articulo, onAbrir }: Props) {
   const disponible = articuloDisponible(articulo)
-  const precioMinimo = Math.min(...articulo.tamanos.map((t) => t.precioCentimos))
+  const tamanosDisponibles = articulo.tamanos.filter((t) => t.disponible)
+  // Si ningún tamaño está disponible hoy, se recurre a la lista completa: el
+  // artículo ya aparece atenuado y sin poder abrirse, pero debe mostrar algún
+  // precio en vez de "∞ €" (Math.min de un array vacío).
+  const tamanosParaPrecio = tamanosDisponibles.length > 0 ? tamanosDisponibles : articulo.tamanos
+  // Guarda explícita: si no hay ningún tamaño (artículo mal formado, p. ej.
+  // creado sin tallas desde un futuro panel de administración), Math.min de un
+  // array vacío daría Infinity y se vería "∞ €".
+  const precioMinimo =
+    tamanosParaPrecio.length > 0
+      ? Math.min(...tamanosParaPrecio.map((t) => t.precioCentimos))
+      : 0
 
   return (
     <button

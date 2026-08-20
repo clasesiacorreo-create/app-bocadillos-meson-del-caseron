@@ -57,6 +57,12 @@ describe('HojaCarrito', () => {
     expect(screen.getByTestId('total')).toHaveTextContent('14,00')
   })
 
+  it('muestra el precio de cada línea', () => {
+    anadir(500, 2)
+    render(<HojaCarrito reglas={REGLAS} onCerrar={vi.fn()} />)
+    expect(screen.getByTestId('precio-linea')).toHaveTextContent('10,00')
+  })
+
   it('avisa cuando el carrito está vacío', () => {
     render(<HojaCarrito reglas={REGLAS} onCerrar={vi.fn()} />)
     expect(screen.getByText(/carrito está vacío/i)).toBeInTheDocument()

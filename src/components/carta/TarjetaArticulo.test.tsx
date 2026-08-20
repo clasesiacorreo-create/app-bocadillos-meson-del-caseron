@@ -43,4 +43,16 @@ describe('TarjetaArticulo', () => {
     render(<TarjetaArticulo articulo={sinTamanos} onAbrir={vi.fn()} />)
     expect(screen.getByRole('button', { name: /Lomo/ })).toBeDisabled()
   })
+
+  it('ignora el tamaño más barato si no está disponible al calcular el "desde"', () => {
+    const tamanoBaratoAgotado = articulo({
+      tamanos: [
+        { id: 't-b', nombre: 'Bocadillo', precioCentimos: 500, disponible: true },
+        { id: 't-m', nombre: 'Montado', precioCentimos: 400, disponible: false },
+      ],
+    })
+    render(<TarjetaArticulo articulo={tamanoBaratoAgotado} onAbrir={vi.fn()} />)
+    expect(screen.getByText(/desde 5,00/)).toBeInTheDocument()
+    expect(screen.queryByText(/desde 4,00/)).not.toBeInTheDocument()
+  })
 })
