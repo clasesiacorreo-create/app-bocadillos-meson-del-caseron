@@ -61,9 +61,16 @@ export async function obtenerCarta(): Promise<Carta> {
               precioCentimos: asignado.precio_centimos,
               disponible: asignado.disponible,
             })),
-          extras: articulo.articulo_extras
-            .map((enlace) => extrasPorId.get(enlace.extra_id))
-            .filter((extra): extra is ExtraDeArticulo => extra !== undefined),
+          // Se filtra iterando `extrasPorId` (ya ordenado por `orden`, porque
+          // `extras.data` se pidió con `.order('orden')`) en vez de mapear
+          // `articulo.articulo_extras`: las filas de la tabla puente no vienen
+          // en ningún orden garantizado desde PostgREST.
+          extras: (() => {
+            const extraIdsDelArticulo = new Set(
+              articulo.articulo_extras.map((enlace) => enlace.extra_id),
+            )
+            return [...extrasPorId.values()].filter((extra) => extraIdsDelArticulo.has(extra.id))
+          })(),
         })),
     })),
   }
