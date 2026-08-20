@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import type { ArticuloCarta, Carta } from '@/lib/carta/tipos'
+import { FichaArticulo } from './FichaArticulo'
 import { PestanasCategorias } from './PestanasCategorias'
 
 export function VistaCarta({ carta }: { carta: Carta }) {
@@ -10,7 +11,13 @@ export function VistaCarta({ carta }: { carta: Carta }) {
   return (
     <>
       <PestanasCategorias categorias={carta.categorias} onAbrirArticulo={setAbierto} />
-      {abierto && <p className="sr-only">Artículo abierto: {abierto.nombre}</p>}
+      {abierto && (
+        <FichaArticulo
+          articulo={abierto}
+          onCerrar={() => setAbierto(null)}
+          onAnadir={() => setAbierto(null)}
+        />
+      )}
     </>
   )
 }
