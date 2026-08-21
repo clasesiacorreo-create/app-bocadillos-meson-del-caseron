@@ -36,42 +36,49 @@ export function FormularioCheckout({ reglas, franjas }: Props) {
   const [notas, setNotas] = useState('')
   const [enviando, setEnviando] = useState(false)
   const [error, setError] = useState<ErrorValidacionPedido | null>(null)
+  const [errorRed, setErrorRed] = useState(false)
 
   const resumen = calcularResumen(lineas, modoEntrega, reglas)
 
   async function enviarPedido() {
     setEnviando(true)
     setError(null)
+    setErrorRed(false)
 
     const contacto = { nombre, apellidos, telefono }
     const direccion = modoEntrega === 'domicilio' ? { calle, numero, piso, cp, ciudad, indicaciones } : null
     guardar(contacto, direccion ?? { calle: '', numero: '', piso: '', cp: '', ciudad: '', indicaciones: '' })
 
-    const respuesta = await fetch('/api/pedidos', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        lineas,
-        modoEntrega,
-        contacto,
-        direccion,
-        franjaSolicitada: {
-          inicio: franjaElegida.inicio,
-          fin: franjaElegida.fin,
-          loAntesPosible: franjaElegida.loAntesPosible,
-        },
-        notas,
-      }),
-    })
-    const cuerpo = await respuesta.json()
+    try {
+      const respuesta = await fetch('/api/pedidos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          lineas,
+          modoEntrega,
+          contacto,
+          direccion,
+          franjaSolicitada: {
+            inicio: franjaElegida.inicio,
+            fin: franjaElegida.fin,
+            loAntesPosible: franjaElegida.loAntesPosible,
+          },
+          notas,
+        }),
+      })
+      const cuerpo = await respuesta.json()
 
-    if (!cuerpo.ok) {
-      setError(cuerpo.error)
+      if (!cuerpo.ok) {
+        setError(cuerpo.error)
+        setEnviando(false)
+        return
+      }
+
+      window.location.href = cuerpo.urlPago
+    } catch {
+      setErrorRed(true)
       setEnviando(false)
-      return
     }
-
-    window.location.href = cuerpo.urlPago
   }
 
   function quitarArticuloAfectado(articuloId: string) {
@@ -81,9 +88,11 @@ export function FormularioCheckout({ reglas, franjas }: Props) {
     setError(null)
   }
 
-  function quitarExtraAfectado(tamanoId: string, extraId: string) {
+  function quitarExtraAfectado(articuloId: string, tamanoId: string, extraId: string) {
     for (const linea of lineas) {
-      if (linea.tamanoId === tamanoId) quitarExtraDeLinea(linea.id, extraId)
+      if (linea.articuloId === articuloId && linea.tamanoId === tamanoId) {
+        quitarExtraDeLinea(linea.id, extraId)
+      }
     }
     setError(null)
   }
@@ -268,7 +277,7 @@ export function FormularioCheckout({ reglas, franjas }: Props) {
           <p>El complemento «{error.nombreExtra}» ya no está disponible.</p>
           <button
             type="button"
-            onClick={() => quitarExtraAfectado(error.tamanoId, error.extraId)}
+            onClick={() => quitarExtraAfectado(error.articuloId, error.tamanoId, error.extraId)}
             className="mt-2 rounded-lg border border-amber-500 px-3 py-2"
           >
             Quitar «{error.nombreExtra}» y continuar
@@ -279,6 +288,12 @@ export function FormularioCheckout({ reglas, franjas }: Props) {
       {error?.tipo === 'bajo_minimo' && (
         <p className="rounded-lg bg-amber-500/10 p-3 text-sm text-amber-400">
           Te faltan {formatearPrecio(error.faltaCentimos)} para llegar al pedido mínimo a domicilio.
+        </p>
+      )}
+
+      {errorRed && (
+        <p className="rounded-lg bg-amber-500/10 p-3 text-sm text-amber-400">
+          No se ha podido conectar para enviar el pedido. Comprueba tu conexión e inténtalo de nuevo.
         </p>
       )}
 
