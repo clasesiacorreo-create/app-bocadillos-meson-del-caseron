@@ -79,12 +79,16 @@ export function restauranteAbierto(reglas: ReglasHorario, ahora: Date): boolean 
  * principio solo si el restaurante está abierto en este instante.
  */
 export function generarFranjas(reglas: ReglasHorario, ahora: Date): Franja[] {
-  const desplazamiento = desplazamientoMinutos(ahora)
   const limiteInicio = ahora.getTime() + reglas.antelacionMinimaMin * 60000
   const franjas: Franja[] = []
 
   for (const diasAdelante of [0, 1]) {
-    const partesDia = partesEnZona(new Date(ahora.getTime() + diasAdelante * 24 * 60 * 60000))
+    const fechaDia = new Date(ahora.getTime() + diasAdelante * 24 * 60 * 60000)
+    // Usar mediodía UTC como referencia para el desplazamiento, para evitar problemas
+    // con cambios de hora (DST) que ocurren en la madrugada local
+    const fechaAlMedioDia = new Date(fechaDia.getTime() + 12 * 60 * 60000)
+    const desplazamiento = desplazamientoMinutos(fechaAlMedioDia)
+    const partesDia = partesEnZona(fechaDia)
 
     for (const tramo of reglas.horario[partesDia.diaSemana]) {
       const [hDesde, mDesde] = tramo.desde.split(':').map(Number)

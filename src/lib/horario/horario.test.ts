@@ -89,6 +89,60 @@ describe('generarFranjas', () => {
     const verano = generarFranjas(r, new Date('2026-07-15T00:00:00Z')).filter((f) => !f.loAntesPosible)
     expect(verano[0].inicio).toBe('2026-07-15T11:00:00.000Z') // CEST = UTC+2
   })
+
+  it('maneja correctamente el cambio de hora de primavera (spring forward)', () => {
+    // 2026-03-29 es el último domingo de marzo: cambio de hora (UTC+1 -> UTC+2)
+    // Hoy: 2026-03-28 (sábado), UTC+1
+    // Mañana: 2026-03-29 (domingo), UTC+2
+    const r = reglas({
+      horario: {
+        ...SIN_TRAMOS,
+        sabado: [{ desde: '13:00', hasta: '13:30' }],
+        domingo: [{ desde: '13:00', hasta: '13:30' }],
+      },
+    })
+    const ahora = new Date('2026-03-28T00:00:00Z')
+    const franjas = generarFranjas(r, ahora).filter((f) => !f.loAntesPosible)
+
+    // Sábado 28: 13:00 Madrid = 12:00 UTC (UTC+1)
+    expect(franjas[0]).toMatchObject({
+      inicio: '2026-03-28T12:00:00.000Z',
+      loAntesPosible: false,
+    })
+
+    // Domingo 29: 13:00 Madrid = 11:00 UTC (UTC+2)
+    expect(franjas[1]).toMatchObject({
+      inicio: '2026-03-29T11:00:00.000Z',
+      loAntesPosible: false,
+    })
+  })
+
+  it('maneja correctamente el cambio de hora de otoño (fall back)', () => {
+    // 2026-10-25 es el último domingo de octubre: cambio de hora (UTC+2 -> UTC+1)
+    // Hoy: 2026-10-24 (sábado), UTC+2
+    // Mañana: 2026-10-25 (domingo), UTC+1
+    const r = reglas({
+      horario: {
+        ...SIN_TRAMOS,
+        sabado: [{ desde: '13:00', hasta: '13:30' }],
+        domingo: [{ desde: '13:00', hasta: '13:30' }],
+      },
+    })
+    const ahora = new Date('2026-10-24T00:00:00Z')
+    const franjas = generarFranjas(r, ahora).filter((f) => !f.loAntesPosible)
+
+    // Sábado 24: 13:00 Madrid = 11:00 UTC (UTC+2)
+    expect(franjas[0]).toMatchObject({
+      inicio: '2026-10-24T11:00:00.000Z',
+      loAntesPosible: false,
+    })
+
+    // Domingo 25: 13:00 Madrid = 12:00 UTC (UTC+1)
+    expect(franjas[1]).toMatchObject({
+      inicio: '2026-10-25T12:00:00.000Z',
+      loAntesPosible: false,
+    })
+  })
 })
 
 describe('restauranteAbierto', () => {
