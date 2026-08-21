@@ -163,6 +163,41 @@ export type Database = {
           },
         ]
       }
+      avisos_log: {
+        Row: {
+          canal: string
+          creado_en: string
+          error: string | null
+          id: string
+          pedido_id: string
+          resultado: string
+        }
+        Insert: {
+          canal: string
+          creado_en?: string
+          error?: string | null
+          id?: string
+          pedido_id: string
+          resultado: string
+        }
+        Update: {
+          canal?: string
+          creado_en?: string
+          error?: string | null
+          id?: string
+          pedido_id?: string
+          resultado?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "avisos_log_pedido_id_fkey"
+            columns: ["pedido_id"]
+            isOneToOne: false
+            referencedRelation: "pedidos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       categorias: {
         Row: {
           activa: boolean
@@ -244,6 +279,202 @@ export type Database = {
           id?: string
           nombre?: string
           orden?: number
+        }
+        Relationships: []
+      }
+      pedido_extras: {
+        Row: {
+          extra_id: string | null
+          id: string
+          linea_id: string
+          nombre_extra: string
+          precio_centimos: number
+        }
+        Insert: {
+          extra_id?: string | null
+          id?: string
+          linea_id: string
+          nombre_extra: string
+          precio_centimos: number
+        }
+        Update: {
+          extra_id?: string | null
+          id?: string
+          linea_id?: string
+          nombre_extra?: string
+          precio_centimos?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pedido_extras_extra_id_fkey"
+            columns: ["extra_id"]
+            isOneToOne: false
+            referencedRelation: "extras"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pedido_extras_linea_id_fkey"
+            columns: ["linea_id"]
+            isOneToOne: false
+            referencedRelation: "pedido_lineas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pedido_lineas: {
+        Row: {
+          articulo_id: string | null
+          cantidad: number
+          id: string
+          nombre_articulo: string
+          nombre_tamano: string
+          notas_linea: string
+          pedido_id: string
+          precio_unitario_centimos: number
+          preparada: boolean
+          tamano_id: string | null
+        }
+        Insert: {
+          articulo_id?: string | null
+          cantidad: number
+          id?: string
+          nombre_articulo: string
+          nombre_tamano: string
+          notas_linea?: string
+          pedido_id: string
+          precio_unitario_centimos: number
+          preparada?: boolean
+          tamano_id?: string | null
+        }
+        Update: {
+          articulo_id?: string | null
+          cantidad?: number
+          id?: string
+          nombre_articulo?: string
+          nombre_tamano?: string
+          notas_linea?: string
+          pedido_id?: string
+          precio_unitario_centimos?: number
+          preparada?: boolean
+          tamano_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pedido_lineas_articulo_id_fkey"
+            columns: ["articulo_id"]
+            isOneToOne: false
+            referencedRelation: "articulos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pedido_lineas_pedido_id_fkey"
+            columns: ["pedido_id"]
+            isOneToOne: false
+            referencedRelation: "pedidos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pedido_lineas_tamano_id_fkey"
+            columns: ["tamano_id"]
+            isOneToOne: false
+            referencedRelation: "tamanos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pedidos: {
+        Row: {
+          cliente_apellidos: string
+          cliente_nombre: string
+          cliente_telefono: string
+          codigo_publico: string
+          confirmado_en: string | null
+          creado_en: string
+          direccion_calle: string | null
+          direccion_ciudad: string | null
+          direccion_cp: string | null
+          direccion_indicaciones: string | null
+          direccion_numero: string | null
+          direccion_piso: string | null
+          entregado_en: string | null
+          envio_centimos: number
+          estado: string
+          franja_confirmada_fin: string | null
+          franja_confirmada_inicio: string | null
+          franja_solicitada_asap: boolean
+          franja_solicitada_fin: string
+          franja_solicitada_inicio: string
+          id: string
+          modo_entrega: string
+          notas: string
+          pagado_en: string | null
+          repartidor_id: string | null
+          stripe_payment_intent: string | null
+          stripe_session_id: string | null
+          subtotal_centimos: number
+          total_centimos: number
+        }
+        Insert: {
+          cliente_apellidos: string
+          cliente_nombre: string
+          cliente_telefono: string
+          codigo_publico: string
+          confirmado_en?: string | null
+          creado_en?: string
+          direccion_calle?: string | null
+          direccion_ciudad?: string | null
+          direccion_cp?: string | null
+          direccion_indicaciones?: string | null
+          direccion_numero?: string | null
+          direccion_piso?: string | null
+          entregado_en?: string | null
+          envio_centimos: number
+          estado?: string
+          franja_confirmada_fin?: string | null
+          franja_confirmada_inicio?: string | null
+          franja_solicitada_asap?: boolean
+          franja_solicitada_fin: string
+          franja_solicitada_inicio: string
+          id?: string
+          modo_entrega: string
+          notas?: string
+          pagado_en?: string | null
+          repartidor_id?: string | null
+          stripe_payment_intent?: string | null
+          stripe_session_id?: string | null
+          subtotal_centimos: number
+          total_centimos: number
+        }
+        Update: {
+          cliente_apellidos?: string
+          cliente_nombre?: string
+          cliente_telefono?: string
+          codigo_publico?: string
+          confirmado_en?: string | null
+          creado_en?: string
+          direccion_calle?: string | null
+          direccion_ciudad?: string | null
+          direccion_cp?: string | null
+          direccion_indicaciones?: string | null
+          direccion_numero?: string | null
+          direccion_piso?: string | null
+          entregado_en?: string | null
+          envio_centimos?: number
+          estado?: string
+          franja_confirmada_fin?: string | null
+          franja_confirmada_inicio?: string | null
+          franja_solicitada_asap?: boolean
+          franja_solicitada_fin?: string
+          franja_solicitada_inicio?: string
+          id?: string
+          modo_entrega?: string
+          notas?: string
+          pagado_en?: string | null
+          repartidor_id?: string | null
+          stripe_payment_intent?: string | null
+          stripe_session_id?: string | null
+          subtotal_centimos?: number
+          total_centimos?: number
         }
         Relationships: []
       }
