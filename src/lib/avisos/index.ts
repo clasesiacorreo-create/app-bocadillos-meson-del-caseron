@@ -34,28 +34,55 @@ async function llamarCallMeBot(mensaje: string): Promise<void> {
 }
 
 /**
+ * Registra el resultado del envío en `avisos_log`. Se llama siempre después
+ * de que el envío haya terminado (con éxito o sin él) y nunca debe poder
+ * tumbar la función que la invoca: cualquier fallo aquí (cliente de
+ * Supabase que no se puede crear, insert que falla) se traga en silencio.
+ * En el peor caso se pierde la entrada del log, nunca el pedido.
+ */
+async function registrarResultado(
+  pedidoId: string,
+  enviado: boolean,
+  error: unknown,
+): Promise<void> {
+  try {
+    const supabase = crearClienteServicio()
+    if (enviado) {
+      await supabase.from('avisos_log').insert({ pedido_id: pedidoId, canal: 'whatsapp', resultado: 'enviado' })
+    } else {
+      await supabase.from('avisos_log').insert({
+        pedido_id: pedidoId,
+        canal: 'whatsapp',
+        resultado: 'fallido',
+        error: error instanceof Error ? error.message : String(error),
+      })
+    }
+  } catch {
+    // Un fallo al registrar el aviso no puede tumbar un pedido ya cobrado.
+  }
+}
+
+/**
  * Nunca lanza: un fallo de CallMeBot no puede tumbar un pedido ya cobrado.
- * Se reintenta una vez y el resultado, éxito o fracaso, queda en
- * `avisos_log` para que el panel pueda mostrarlo más adelante.
+ * Se reintenta el envío una vez; el resultado, éxito o fracaso, se registra
+ * en `avisos_log` (best-effort) para que el panel pueda mostrarlo más
+ * adelante. El reintento cubre solo el envío en sí — una vez que el envío
+ * ha tenido éxito no se vuelve a intentar, aunque falle el registro.
  */
 export async function avisarNuevoPedido(pedido: PedidoConLineas): Promise<void> {
   const mensaje = construirMensaje(pedido)
-  const supabase = crearClienteServicio()
 
-  for (let intento = 0; intento < 2; intento++) {
+  let enviado = false
+  let ultimoError: unknown = null
+
+  for (let intento = 0; intento < 2 && !enviado; intento++) {
     try {
       await llamarCallMeBot(mensaje)
-      await supabase.from('avisos_log').insert({ pedido_id: pedido.id, canal: 'whatsapp', resultado: 'enviado' })
-      return
+      enviado = true
     } catch (error) {
-      if (intento === 1) {
-        await supabase.from('avisos_log').insert({
-          pedido_id: pedido.id,
-          canal: 'whatsapp',
-          resultado: 'fallido',
-          error: error instanceof Error ? error.message : String(error),
-        })
-      }
+      ultimoError = error
     }
   }
+
+  await registrarResultado(pedido.id, enviado, ultimoError)
 }
