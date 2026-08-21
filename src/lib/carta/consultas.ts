@@ -1,5 +1,6 @@
 import { crearClienteServidor } from '@/lib/supabase/cliente-servidor'
 import type { ReglasPedido } from '@/lib/precios/tipos'
+import type { ReglasHorario } from '@/lib/horario/tipos'
 import type { Carta, ExtraDeArticulo } from './tipos'
 
 export async function obtenerCarta(): Promise<Carta> {
@@ -89,5 +90,21 @@ export async function obtenerReglas(): Promise<ReglasPedido> {
     envioCentimos: data.envio_centimos,
     pedidoMinimoCentimos: data.pedido_minimo_centimos,
     envioGratisDesdeCentimos: data.envio_gratis_desde_centimos,
+  }
+}
+
+export async function obtenerAjustesHorario(): Promise<ReglasHorario> {
+  const supabase = crearClienteServidor()
+  const { data, error } = await supabase
+    .from('ajustes')
+    .select('horario, antelacion_minima_min, duracion_franja_min')
+    .single()
+
+  if (error) throw error
+
+  return {
+    horario: data.horario as unknown as ReglasHorario['horario'],
+    antelacionMinimaMin: data.antelacion_minima_min,
+    duracionFranjaMin: data.duracion_franja_min,
   }
 }

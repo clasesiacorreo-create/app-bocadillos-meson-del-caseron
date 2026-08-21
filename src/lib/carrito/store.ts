@@ -8,6 +8,7 @@ type EstadoCarrito = {
   lineas: LineaEnCarrito[]
   anadir: (linea: LineaParaCarrito) => void
   cambiarCantidad: (id: string, cantidad: number) => void
+  quitarExtraDeLinea: (id: string, extraId: string) => void
   eliminar: (id: string) => void
   vaciar: () => void
 }
@@ -54,6 +55,15 @@ export const useCarrito = create<EstadoCarrito>()(
             cantidad <= 0
               ? estado.lineas.filter((linea) => linea.id !== id)
               : estado.lineas.map((linea) => (linea.id === id ? { ...linea, cantidad } : linea)),
+        })),
+
+      quitarExtraDeLinea: (id, extraId) =>
+        set((estado) => ({
+          lineas: estado.lineas.map((linea) =>
+            linea.id === id
+              ? { ...linea, extras: linea.extras.filter((extra) => extra.extraId !== extraId) }
+              : linea,
+          ),
         })),
 
       eliminar: (id) =>

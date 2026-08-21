@@ -1,5 +1,6 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
 import { HojaInferior } from '@/components/ui/HojaInferior'
 import { useCarrito } from '@/lib/carrito/store'
 import { formatearPrecio } from '@/lib/dinero'
@@ -15,6 +16,7 @@ export function HojaCarrito({ reglas, onCerrar }: Props) {
   const lineas = useCarrito((estado) => estado.lineas)
   const cambiarCantidad = useCarrito((estado) => estado.cambiarCantidad)
   const resumen = calcularResumen(lineas, 'domicilio', reglas)
+  const router = useRouter()
 
   return (
     <HojaInferior titulo="Tu pedido" onCerrar={onCerrar}>
@@ -109,6 +111,7 @@ export function HojaCarrito({ reglas, onCerrar }: Props) {
           <button
             type="button"
             disabled={!resumen.alcanzaMinimo}
+            onClick={() => router.push('/checkout')}
             className="mt-6 h-14 w-full rounded-xl bg-amber-500 text-lg font-bold text-neutral-950 disabled:opacity-40"
           >
             Continuar

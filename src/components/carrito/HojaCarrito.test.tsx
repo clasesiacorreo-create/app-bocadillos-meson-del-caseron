@@ -4,6 +4,10 @@ import { HojaCarrito } from './HojaCarrito'
 import { useCarrito } from '@/lib/carrito/store'
 import type { ReglasPedido } from '@/lib/precios/tipos'
 
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push: vi.fn() }),
+}))
+
 const REGLAS: ReglasPedido = {
   envioCentimos: 200,
   pedidoMinimoCentimos: 1000,
