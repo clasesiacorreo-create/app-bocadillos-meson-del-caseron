@@ -63,6 +63,7 @@ export type PedidoCreado = {
   subtotalCentimos: number
   envioCentimos: number
   totalCentimos: number
+  lineasVerificadas: LineaParaCarrito[]
 }
 
 export type PedidoExtraFila = Tables<'pedido_extras'>

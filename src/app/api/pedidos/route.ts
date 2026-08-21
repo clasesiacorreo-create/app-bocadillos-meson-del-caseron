@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
 
   const sesion = await crearSesionCheckout({
     codigoPublico: resultado.pedido.codigoPublico,
-    lineas: solicitud.lineas,
+    lineas: resultado.pedido.lineasVerificadas,
     envioCentimos: resultado.pedido.envioCentimos,
     origen: req.nextUrl.origin,
   })

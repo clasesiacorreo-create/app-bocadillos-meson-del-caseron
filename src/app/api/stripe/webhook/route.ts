@@ -21,13 +21,15 @@ export async function POST(req: NextRequest) {
 
   if (evento.type === 'checkout.session.completed') {
     const session = evento.data.object as Stripe.Checkout.Session
-    const paymentIntent = typeof session.payment_intent === 'string' ? session.payment_intent : ''
-    const pedidoConfirmado = await confirmarPagoDePedido(session.id, paymentIntent)
+    if (session.payment_status === 'paid') {
+      const paymentIntent = typeof session.payment_intent === 'string' ? session.payment_intent : ''
+      const pedidoConfirmado = await confirmarPagoDePedido(session.id, paymentIntent)
 
-    // Si es null, ya estaba confirmado (Stripe reintentó el webhook, o la red
-    // de seguridad del seguimiento llegó primero): no se vuelve a avisar.
-    if (pedidoConfirmado) {
-      await avisarNuevoPedido(pedidoConfirmado)
+      // Si es null, ya estaba confirmado (Stripe reintentó el webhook, o la red
+      // de seguridad del seguimiento llegó primero): no se vuelve a avisar.
+      if (pedidoConfirmado) {
+        await avisarNuevoPedido(pedidoConfirmado)
+      }
     }
   }
 

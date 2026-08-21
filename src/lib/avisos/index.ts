@@ -29,7 +29,7 @@ async function llamarCallMeBot(mensaje: string): Promise<void> {
   const url =
     `https://api.callmebot.com/whatsapp.php?phone=${encodeURIComponent(telefono)}` +
     `&text=${encodeURIComponent(mensaje)}&apikey=${encodeURIComponent(clave)}`
-  const respuesta = await fetch(url)
+  const respuesta = await fetch(url, { signal: AbortSignal.timeout(5000) })
   if (!respuesta.ok) throw new Error(`CallMeBot respondió ${respuesta.status}`)
 }
 

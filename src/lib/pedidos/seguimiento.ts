@@ -1,3 +1,4 @@
+import { avisarNuevoPedido } from '@/lib/avisos'
 import { obtenerEstadoSesion } from '@/lib/pagos'
 import type { ModoEntrega } from '@/lib/precios/tipos'
 import { crearClienteServicio } from '@/lib/supabase/cliente-servicio'
@@ -66,7 +67,13 @@ export async function obtenerEstadoPedido(codigo: string): Promise<EstadoSeguimi
     const estadoSesion = await obtenerEstadoSesion(pedidoActual.stripe_session_id)
     if (estadoSesion.pagada && estadoSesion.paymentIntent) {
       const confirmado = await confirmarPagoDePedido(pedidoActual.stripe_session_id, estadoSesion.paymentIntent)
-      if (confirmado) pedidoActual = confirmado
+      if (confirmado) {
+        pedidoActual = confirmado
+        // La red de seguridad ha ganado la carrera con el webhook: hay que
+        // avisar al restaurante aquí, igual que hace el webhook cuando llega
+        // primero, o el pedido pagado nunca se notifica.
+        await avisarNuevoPedido(confirmado)
+      }
     }
   }
 

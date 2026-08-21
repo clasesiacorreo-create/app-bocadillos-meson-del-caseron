@@ -152,6 +152,7 @@ export async function crearPedidoPendiente(
         subtotalCentimos: resumen.subtotalCentimos,
         envioCentimos: resumen.envioCentimos,
         totalCentimos: resumen.totalCentimos,
+        lineasVerificadas,
       },
     }
   }
