@@ -113,4 +113,18 @@ describe('TarjetaPedido', () => {
     )
     expect(screen.getByRole('checkbox')).toBeDisabled()
   })
+
+  it('no actualiza el checklist si el PATCH de la línea falla', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, json: () => Promise.resolve({}) }))
+    const onActualizado = vi.fn()
+    render(<TarjetaPedido pedido={pedido()} perfil={PERFIL_COCINA} franjas={[]} onActualizado={onActualizado} />)
+
+    await userEvent.click(screen.getByRole('checkbox'))
+
+    expect(fetch).toHaveBeenCalledWith(
+      '/api/panel/pedidos/p-1/lineas/l-1',
+      expect.objectContaining({ method: 'PATCH' }),
+    )
+    expect(onActualizado).not.toHaveBeenCalled()
+  })
 })

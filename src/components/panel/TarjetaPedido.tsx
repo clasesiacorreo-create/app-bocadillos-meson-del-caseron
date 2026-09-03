@@ -74,15 +74,17 @@ export function TarjetaPedido({ pedido, perfil, franjas, onActualizado }: Props)
   }
 
   async function marcarLinea(lineaId: string, preparada: boolean) {
-    await fetch(`/api/panel/pedidos/${pedido.id}/lineas/${lineaId}`, {
+    const respuesta = await fetch(`/api/panel/pedidos/${pedido.id}/lineas/${lineaId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ preparada }),
     })
-    onActualizado({
-      ...pedido,
-      pedido_lineas: pedido.pedido_lineas.map((l) => (l.id === lineaId ? { ...l, preparada } : l)),
-    })
+    if (respuesta.ok) {
+      onActualizado({
+        ...pedido,
+        pedido_lineas: pedido.pedido_lineas.map((l) => (l.id === lineaId ? { ...l, preparada } : l)),
+      })
+    }
   }
 
   return (
