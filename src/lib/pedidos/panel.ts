@@ -5,13 +5,28 @@ import type { EstadoPedido, FranjaSolicitada, PedidoConLineas } from './tipos'
 
 const SELECT_CON_LINEAS = '*, pedido_lineas(*, pedido_extras(*))'
 
+/** Ventana móvil de 24 h: no hace falta la matemática de "principio del día" en Europe/Madrid. */
+const VENTANA_TABLERO_MS = 24 * 60 * 60 * 1000
+
 /**
  * Pedidos visibles para el tablero. Se ejecuta con el cliente de la sesión
  * de quien llama (no con la clave de servicio): las políticas de RLS ya
  * filtran qué pedidos puede ver según su rol en `perfiles_staff`.
+ *
+ * Acotada a las últimas 24 h y sin los pedidos aún sin cobrar: el tablero no
+ * pinta `pendiente_pago` en ninguna pestaña, así que traerlos solo serviría
+ * para cargar en cada visita todo el histórico del restaurante (con sus
+ * líneas y extras), incluido cada carrito abandonado en el caso de admin,
+ * cuya política de RLS no los filtra.
  */
 export async function listarPedidosPanel(supabase: SupabaseClient<BaseDeDatos>): Promise<PedidoConLineas[]> {
-  const { data, error } = await supabase.from('pedidos').select(SELECT_CON_LINEAS).order('creado_en')
+  const desde = new Date(Date.now() - VENTANA_TABLERO_MS).toISOString()
+  const { data, error } = await supabase
+    .from('pedidos')
+    .select(SELECT_CON_LINEAS)
+    .neq('estado', 'pendiente_pago')
+    .gte('creado_en', desde)
+    .order('creado_en')
   if (error) throw error
   return data as PedidoConLineas[]
 }
