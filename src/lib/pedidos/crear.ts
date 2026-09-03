@@ -6,7 +6,7 @@ import { calcularResumen } from '@/lib/precios'
 import type { LineaCarrito } from '@/lib/precios/tipos'
 import { crearClienteServicio } from '@/lib/supabase/cliente-servicio'
 import type { ErrorValidacionPedido, PedidoCreado, SolicitudPedido } from './tipos'
-import { validarLineas } from './validacion'
+import { validarDatosContacto, validarLineas } from './validacion'
 
 function generarCodigoPublico(): string {
   // Aleatorio, no correlativo: un correlativo permitiría leer los pedidos de
@@ -50,6 +50,9 @@ function conPreciosVerificados(carta: Carta, linea: LineaParaCarrito): LineaPara
 export async function crearPedidoPendiente(
   solicitud: SolicitudPedido,
 ): Promise<{ ok: true; pedido: PedidoCreado } | { ok: false; error: ErrorValidacionPedido }> {
+  const errorDatosContacto = validarDatosContacto(solicitud.modoEntrega, solicitud.contacto, solicitud.direccion)
+  if (errorDatosContacto) return { ok: false, error: errorDatosContacto }
+
   const carta = await obtenerCarta()
   const errorDisponibilidad = validarLineas(carta, solicitud.lineas)
   if (errorDisponibilidad) return { ok: false, error: errorDisponibilidad }

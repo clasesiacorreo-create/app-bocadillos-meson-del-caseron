@@ -9,6 +9,7 @@ import { formatearPrecio } from '@/lib/dinero'
 import { useCarrito } from '@/lib/carrito/store'
 import { useDatosContacto } from '@/lib/carrito/datosContacto'
 import type { ErrorValidacionPedido } from '@/lib/pedidos/tipos'
+import { validarDatosContacto } from '@/lib/pedidos/validacion'
 import type { ModoEntrega } from '@/lib/precios/tipos'
 
 type Props = {
@@ -48,6 +49,13 @@ export function FormularioCheckout({ reglas, franjas }: Props) {
     const contacto = { nombre, apellidos, telefono }
     const direccion = modoEntrega === 'domicilio' ? { calle, numero, piso, cp, ciudad, indicaciones } : null
     guardar(contacto, direccion ?? { calle: '', numero: '', piso: '', cp: '', ciudad: '', indicaciones: '' })
+
+    const errorDatosContacto = validarDatosContacto(modoEntrega, contacto, direccion)
+    if (errorDatosContacto) {
+      setError(errorDatosContacto)
+      setEnviando(false)
+      return
+    }
 
     try {
       const respuesta = await fetch('/api/pedidos', {
@@ -283,6 +291,12 @@ export function FormularioCheckout({ reglas, franjas }: Props) {
             Quitar «{error.nombreExtra}» y continuar
           </button>
         </div>
+      )}
+
+      {error?.tipo === 'datos_contacto_invalidos' && (
+        <p className="rounded-lg bg-amber-500/10 p-3 text-sm text-amber-400">
+          Revisa estos datos antes de continuar: {error.campos.join(', ')}.
+        </p>
       )}
 
       {error?.tipo === 'bajo_minimo' && (

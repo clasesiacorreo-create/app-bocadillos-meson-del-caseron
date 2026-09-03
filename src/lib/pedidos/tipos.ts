@@ -42,6 +42,7 @@ export type ErrorValidacionPedido =
       nombreExtra: string
     }
   | { tipo: 'bajo_minimo'; faltaCentimos: number }
+  | { tipo: 'datos_contacto_invalidos'; campos: string[] }
 
 /**
  * Los tipos generados por Supabase no conocen la restricción `check` de

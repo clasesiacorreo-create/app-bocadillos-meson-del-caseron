@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { FormularioCheckout } from './FormularioCheckout'
 import { useCarrito } from '@/lib/carrito/store'
+import { useDatosContacto } from '@/lib/carrito/datosContacto'
 import type { ReglasPedido } from '@/lib/precios/tipos'
 import type { Franja } from '@/lib/horario/tipos'
 
@@ -32,6 +33,14 @@ function anadirLineaValida() {
 
 beforeEach(() => {
   useCarrito.getState().vaciar()
+  // El store de datos de contacto es un singleton en memoria (skipHydration:
+  // true, no recarga de localStorage entre tests): sin este reset, un
+  // `guardar()` de un test anterior deja "Ana García 600111222" precargado
+  // en el siguiente test.
+  useDatosContacto.setState({
+    contacto: { nombre: '', apellidos: '', telefono: '' },
+    direccion: { calle: '', numero: '', piso: '', cp: '', ciudad: '', indicaciones: '' },
+  })
   vi.restoreAllMocks()
 })
 
@@ -137,5 +146,40 @@ describe('FormularioCheckout', () => {
     const lineaChorizo = lineas.find((l) => l.articuloId === 'a-2')!
     expect(lineaLomo.extras).toEqual([])
     expect(lineaChorizo.extras).toEqual([{ extraId: 'e-1', nombre: 'Queso', precioCentimos: 100 }])
+  })
+
+  it('no envía el pedido si faltan datos de contacto, y no llega a llamar al servidor', async () => {
+    anadirLineaValida()
+    const fetchMock = vi.fn()
+    vi.stubGlobal('fetch', fetchMock)
+
+    render(<FormularioCheckout reglas={REGLAS} franjas={FRANJAS} />)
+    await userEvent.click(screen.getByRole('button', { name: 'Recogida en el local' }))
+    // Nombre y apellidos se quedan vacíos a propósito; el teléfono también.
+    await userEvent.click(screen.getByRole('button', { name: /Pagar/ }))
+
+    expect(
+      await screen.findByText('Revisa estos datos antes de continuar: Nombre, Apellidos, Teléfono.'),
+    ).toBeInTheDocument()
+    expect(fetchMock).not.toHaveBeenCalled()
+    expect(screen.getByRole('button', { name: /Pagar/ })).toBeEnabled()
+  })
+
+  it('no envía el pedido a domicilio sin dirección completa', async () => {
+    anadirLineaValida()
+    const fetchMock = vi.fn()
+    vi.stubGlobal('fetch', fetchMock)
+
+    render(<FormularioCheckout reglas={REGLAS} franjas={FRANJAS} />)
+    // Modo por defecto ya es 'domicilio'; se rellenan solo los datos de contacto.
+    await userEvent.type(screen.getByLabelText('Nombre'), 'Ana')
+    await userEvent.type(screen.getByLabelText('Apellidos'), 'García')
+    await userEvent.type(screen.getByLabelText('Teléfono'), '600111222')
+    await userEvent.click(screen.getByRole('button', { name: /Pagar/ }))
+
+    expect(
+      await screen.findByText('Revisa estos datos antes de continuar: Calle, Número, Código postal, Ciudad.'),
+    ).toBeInTheDocument()
+    expect(fetchMock).not.toHaveBeenCalled()
   })
 })
