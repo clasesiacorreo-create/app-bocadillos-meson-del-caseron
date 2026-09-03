@@ -41,11 +41,22 @@ test('la cocina confirma, prepara y entrega un pedido de recogida recién pagado
   await page.waitForURL(/\/panel$/)
 
   const tarjeta = page.locator('article').filter({ hasText: codigoPedido })
-  // El pedido se crea con la franja "Lo antes posible" (la que el checkout preselecciona
-  // por defecto), así que la tarjeta ofrece un único botón que confirma la franja y pasa
-  // a preparación a la vez, en vez de los pasos separados "Confirmar" + "Empezar".
-  await expect(tarjeta.getByRole('button', { name: 'Aceptar y empezar' })).toBeVisible({ timeout: 15000 })
-  await tarjeta.getByRole('button', { name: 'Aceptar y empezar' }).click()
+  // La tarjeta ofrece un flujo de confirmación distinto según si el restaurante estaba
+  // abierto al pagar: si lo estaba, el checkout preselecciona "Lo antes posible" y la
+  // tarjeta muestra un único botón "Aceptar y empezar" que confirma la franja y pasa a
+  // preparación a la vez; si no lo estaba (pero seguía habiendo franjas futuras), el
+  // pedido lleva una franja concreta y la tarjeta muestra los pasos separados
+  // "Confirmar {hora}" + "Empezar". No depende de cuál esté abierto el restaurante al
+  // ejecutar el test: se espera a que aparezca cualquiera de los dos y se sigue ese flujo.
+  const botonAceptarYEmpezar = tarjeta.getByRole('button', { name: 'Aceptar y empezar' })
+  const botonConfirmar = tarjeta.getByRole('button', { name: /Confirmar/ })
+  await expect(botonAceptarYEmpezar.or(botonConfirmar)).toBeVisible({ timeout: 15000 })
+  if (await botonAceptarYEmpezar.isVisible()) {
+    await botonAceptarYEmpezar.click()
+  } else {
+    await botonConfirmar.click()
+    await tarjeta.getByRole('button', { name: 'Empezar' }).click()
+  }
 
   // El tablero solo pinta las tarjetas de la pestaña activa (TableroPedidos filtra por
   // estado), así que cada transición que cambia de pestaña obliga a cambiar de pestaña
