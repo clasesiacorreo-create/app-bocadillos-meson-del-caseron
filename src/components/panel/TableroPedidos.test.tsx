@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { TableroPedidos } from './TableroPedidos'
@@ -7,15 +7,65 @@ import type { PerfilStaff } from '@/lib/personal/tipos'
 
 const PERFIL_COCINA: PerfilStaff = { userId: 'u-1', nombre: 'Cocina', rol: 'cocina' }
 
-vi.mock('@/lib/supabase/cliente-navegador', () => ({
-  crearClienteNavegador: () => ({
-    channel: () => ({
-      on: vi.fn().mockReturnThis(),
-      subscribe: vi.fn().mockReturnThis(),
-    }),
-    removeChannel: vi.fn(),
-  }),
+type FilaPedido = Record<string, unknown>
+
+/**
+ * El mock del cliente guarda los callbacks que el componente registra en el
+ * canal de Realtime (`.on(...)`) para poder dispararlos desde los tests, y
+ * devuelve por `from(...)` el pedido que cada test coloque en `pedidoRemoto`.
+ * Sin esto los manejadores de tiempo real no tendrían ninguna cobertura.
+ */
+const { manejadores, pedidoRemoto } = vi.hoisted(() => ({
+  manejadores: new Map<string, (payload: { new: Record<string, unknown> }) => void>(),
+  pedidoRemoto: { actual: null as unknown },
 }))
+
+vi.mock('@/lib/supabase/cliente-navegador', () => {
+  function canalEncadenable() {
+    const canal = {
+      on: (
+        _tipo: string,
+        filtro: { event: string; table: string },
+        callback: (payload: { new: Record<string, unknown> }) => void,
+      ) => {
+        manejadores.set(`${filtro.event}:${filtro.table}`, callback)
+        return canal
+      },
+      subscribe: () => canal,
+    }
+    return canal
+  }
+
+  return {
+    crearClienteNavegador: () => ({
+      channel: () => canalEncadenable(),
+      removeChannel: vi.fn(),
+      from: () => ({
+        select: () => ({
+          eq: () => ({ single: () => Promise.resolve({ data: pedidoRemoto.actual }) }),
+        }),
+      }),
+    }),
+  }
+})
+
+/** jsdom no trae Web Audio: sin este doble el aviso se cortaría antes de vibrar. */
+class ContextoAudioFalso {
+  state = 'running'
+  currentTime = 0
+  destination = {}
+  resume() {
+    return Promise.resolve()
+  }
+  createOscillator() {
+    return { type: '', frequency: { value: 0 }, connect() {}, start() {}, stop() {} }
+  }
+  createGain() {
+    return { gain: { setValueAtTime() {}, exponentialRampToValueAtTime() {} }, connect() {} }
+  }
+}
+
+const vibrar = vi.fn()
 
 function pedido(parcial: Partial<PedidoConLineas> = {}): PedidoConLineas {
   return {
@@ -53,8 +103,22 @@ function pedido(parcial: Partial<PedidoConLineas> = {}): PedidoConLineas {
   } as PedidoConLineas
 }
 
+/** Dispara el manejador que el componente registró para ese evento y tabla. */
+async function emitir(clave: string, fila: FilaPedido) {
+  const manejador = manejadores.get(clave)
+  if (!manejador) throw new Error(`El componente no registró ningún manejador para ${clave}`)
+  await act(async () => {
+    manejador({ new: fila })
+  })
+}
+
 beforeEach(() => {
   vi.restoreAllMocks()
+  manejadores.clear()
+  pedidoRemoto.actual = null
+  vibrar.mockClear()
+  vi.stubGlobal('AudioContext', ContextoAudioFalso)
+  Object.defineProperty(navigator, 'vibrate', { value: vibrar, configurable: true, writable: true })
 })
 
 describe('TableroPedidos', () => {
@@ -79,5 +143,48 @@ describe('TableroPedidos', () => {
       />,
     )
     expect(screen.getByText('No hay pedidos aquí.')).toBeInTheDocument()
+  })
+
+  // A cocina el pedido recién pagado le llega como UPDATE (pendiente_pago →
+  // nuevo), nunca como INSERT: RLS le oculta la fila mientras está sin cobrar.
+  // Si el tablero solo añadiera pedidos en el INSERT, la cocina no vería nunca
+  // aparecer un pedido nuevo hasta recargar la página.
+  it('trae y avisa un pedido que aparece por primera vez con un UPDATE', async () => {
+    pedidoRemoto.actual = pedido({ id: 'p-nuevo', codigo_publico: 'zzz999', estado: 'nuevo' })
+    render(<TableroPedidos perfil={PERFIL_COCINA} pedidosIniciales={[]} franjas={[]} />)
+
+    await emitir('UPDATE:pedidos', { id: 'p-nuevo', estado: 'nuevo' })
+
+    expect(await screen.findByText(/zzz999/)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Nuevos \(1\)/ })).toBeInTheDocument()
+    expect(vibrar).toHaveBeenCalled()
+  })
+
+  it('ignora un pedido pendiente de pago que no está en el tablero, sin avisar', async () => {
+    pedidoRemoto.actual = pedido({ id: 'p-oculto', codigo_publico: 'oculto1', estado: 'nuevo' })
+    render(<TableroPedidos perfil={PERFIL_COCINA} pedidosIniciales={[]} franjas={[]} />)
+
+    await emitir('INSERT:pedidos', { id: 'p-oculto', estado: 'pendiente_pago' })
+
+    expect(screen.queryByText(/oculto1/)).not.toBeInTheDocument()
+    expect(screen.getByText('No hay pedidos aquí.')).toBeInTheDocument()
+    expect(vibrar).not.toHaveBeenCalled()
+  })
+
+  it('actualiza en su sitio un pedido que ya estaba en el tablero, sin repetir el aviso', async () => {
+    render(
+      <TableroPedidos
+        perfil={PERFIL_COCINA}
+        pedidosIniciales={[pedido({ id: 'p-1', estado: 'nuevo' })]}
+        franjas={[]}
+      />,
+    )
+    expect(screen.getByRole('button', { name: /Nuevos \(1\)/ })).toBeInTheDocument()
+
+    await emitir('UPDATE:pedidos', { id: 'p-1', estado: 'en_preparacion' })
+
+    expect(screen.getByRole('button', { name: /Nuevos \(0\)/ })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /En marcha \(1\)/ })).toBeInTheDocument()
+    expect(vibrar).not.toHaveBeenCalled()
   })
 })

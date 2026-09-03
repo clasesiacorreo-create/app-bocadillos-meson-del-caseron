@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { crearClienteNavegador } from '@/lib/supabase/cliente-navegador'
 import {
   actualizarCamposPedido,
@@ -23,9 +23,27 @@ const PESTANAS: { id: Pestana; etiqueta: string }[] = [
   { id: 'entregados', etiqueta: 'Entregados' },
 ]
 
-function reproducirAviso() {
+let contextoAudioCompartido: AudioContext | null = null
+
+function obtenerContextoAudio(): AudioContext | null {
+  if (!contextoAudioCompartido) {
+    try {
+      contextoAudioCompartido = new AudioContext()
+    } catch {
+      return null
+    }
+  }
+  return contextoAudioCompartido
+}
+
+async function reproducirAviso() {
   try {
-    const contexto = new AudioContext()
+    const contexto = obtenerContextoAudio()
+    if (!contexto) return
+    // Un `AudioContext` creado tras una navegación de página completa (como el
+    // redirect de FormularioLogin) empieza "suspended" sin gesto del usuario:
+    // sin este resume() no suena nada y no salta ningún error que avisar.
+    if (contexto.state === 'suspended') await contexto.resume()
     const oscilador = contexto.createOscillator()
     const ganancia = contexto.createGain()
     oscilador.type = 'sine'
@@ -50,26 +68,48 @@ type Props = {
 
 export function TableroPedidos({ perfil, pedidosIniciales, franjas }: Props) {
   const [pedidos, setPedidos] = useState(pedidosIniciales)
+  const pedidosRef = useRef(pedidos)
+  useEffect(() => {
+    pedidosRef.current = pedidos
+  }, [pedidos])
   const [pestanaActiva, setPestanaActiva] = useState<Pestana>('nuevos')
 
   useEffect(() => {
     const supabase = crearClienteNavegador()
 
+    // Un mismo pedido puede llegar como INSERT (pendiente_pago, solo lo ve
+    // admin, RLS se lo filtra a cocina) o como UPDATE (p. ej. el webhook lo
+    // pasa a `nuevo`): lo que importa para el tablero no es el tipo de
+    // evento, sino si el pedido ya estaba en la lista visible. Si no lo
+    // estaba y ahora tiene una pestaña donde mostrarse, es la primera vez
+    // que aparece: se trae completo (con líneas) y se avisa. Si ya estaba,
+    // solo se actualizan sus campos, sin repetir el aviso.
+    async function manejarCambioDePedido(cambio: Tables<'pedidos'>) {
+      const yaVisible = pedidosRef.current.some((p) => p.id === cambio.id)
+      if (yaVisible) {
+        setPedidos((actuales) => actualizarCamposPedido(actuales, cambio))
+        return
+      }
+      if (pestanaDePedido(cambio.estado as EstadoPedido) === null) return
+
+      const { data } = await supabase
+        .from('pedidos')
+        .select('*, pedido_lineas(*, pedido_extras(*))')
+        .eq('id', cambio.id)
+        .single()
+      if (data) {
+        setPedidos((actuales) => fusionarPedidoEnLista(actuales, data as PedidoConLineas))
+        reproducirAviso()
+      }
+    }
+
     const canal = supabase
       .channel('tablero-pedidos')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'pedidos' }, async (payload) => {
-        const { data } = await supabase
-          .from('pedidos')
-          .select('*, pedido_lineas(*, pedido_extras(*))')
-          .eq('id', (payload.new as Tables<'pedidos'>).id)
-          .single()
-        if (data) {
-          setPedidos((actuales) => fusionarPedidoEnLista(actuales, data as PedidoConLineas))
-          reproducirAviso()
-        }
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'pedidos' }, (payload) => {
+        manejarCambioDePedido(payload.new as Tables<'pedidos'>)
       })
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'pedidos' }, (payload) => {
-        setPedidos((actuales) => actualizarCamposPedido(actuales, payload.new as Tables<'pedidos'>))
+        manejarCambioDePedido(payload.new as Tables<'pedidos'>)
       })
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'pedido_lineas' }, (payload) => {
         setPedidos((actuales) => fusionarLineaEnLista(actuales, payload.new as Tables<'pedido_lineas'>))
