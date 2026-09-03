@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { obtenerPerfilStaff } from '@/lib/personal/sesion'
 import { CerrarSesionBoton } from '@/components/panel/CerrarSesionBoton'
+import { NavPanel } from '@/components/panel/NavPanel'
 
 export default async function LayoutPanel({ children }: { children: React.ReactNode }) {
   const perfil = await obtenerPerfilStaff()
@@ -15,6 +16,7 @@ export default async function LayoutPanel({ children }: { children: React.ReactN
         </div>
         <CerrarSesionBoton />
       </header>
+      <NavPanel rol={perfil.rol} />
       <main className="px-4 py-4">{children}</main>
     </div>
   )
