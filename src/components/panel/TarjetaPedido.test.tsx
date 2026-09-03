@@ -126,5 +126,32 @@ describe('TarjetaPedido', () => {
       expect.objectContaining({ method: 'PATCH' }),
     )
     expect(onActualizado).not.toHaveBeenCalled()
+    // Un cuerpo sin `error` usable cae en el mensaje genérico, pero nunca en
+    // el silencio: una acción que no hace nada ni dice nada no es aceptable.
+    expect(screen.getByText('No se ha podido completar la acción. Inténtalo de nuevo.')).toBeInTheDocument()
+  })
+
+  it('enseña el mensaje que devuelve el servidor cuando la acción falla', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({ ok: false, json: () => Promise.resolve({ error: 'Esa franja ya no es válida.' }) }),
+    )
+    render(<TarjetaPedido pedido={pedido()} perfil={PERFIL_COCINA} franjas={[]} onActualizado={() => {}} />)
+
+    await userEvent.click(screen.getByRole('button', { name: /Confirmar 13:00–13:30/ }))
+
+    expect(screen.getByText('Esa franja ya no es válida.')).toBeInTheDocument()
+  })
+
+  it('mantiene abierto el selector de horas si la confirmación falla', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, json: () => Promise.resolve({}) }))
+    const franjas = [{ inicio: '2026-01-15T13:00:00.000Z', fin: '2026-01-15T13:30:00.000Z', loAntesPosible: false }]
+    render(<TarjetaPedido pedido={pedido()} perfil={PERFIL_COCINA} franjas={franjas} onActualizado={() => {}} />)
+
+    await userEvent.click(screen.getByRole('button', { name: 'Proponer otra hora' }))
+    await userEvent.click(screen.getByRole('button', { name: '14:00–14:30' }))
+
+    expect(screen.getByRole('button', { name: '14:00–14:30' })).toBeInTheDocument()
+    expect(screen.getByText('No se ha podido completar la acción. Inténtalo de nuevo.')).toBeInTheDocument()
   })
 })

@@ -9,6 +9,24 @@ import type { EstadoPedido, PedidoConLineas } from '@/lib/pedidos/tipos'
 import type { ModoEntrega } from '@/lib/precios/tipos'
 import type { PerfilStaff } from '@/lib/personal/tipos'
 
+const MENSAJE_GENERICO = 'No se ha podido completar la acción. Inténtalo de nuevo.'
+
+/**
+ * En una pantalla de cocina, una acción que no hace nada se lee como "¿lo
+ * vuelvo a pulsar?": cuando la respuesta no es `ok` hay que enseñar algo. Los
+ * endpoints del panel responden `{ error: string }`; si el cuerpo no llega o
+ * no lo trae, se recurre al mensaje genérico.
+ */
+async function mensajeDeError(respuesta: Response): Promise<string> {
+  try {
+    const cuerpo = (await respuesta.json()) as { error?: unknown }
+    if (typeof cuerpo.error === 'string' && cuerpo.error.trim() !== '') return cuerpo.error
+  } catch {
+    // Cuerpo vacío o que no es JSON: se usa el mensaje genérico.
+  }
+  return MENSAJE_GENERICO
+}
+
 type Props = {
   pedido: PedidoConLineas
   perfil: PerfilStaff
@@ -19,6 +37,7 @@ type Props = {
 export function TarjetaPedido({ pedido, perfil, franjas, onActualizado }: Props) {
   const [mostrandoOtrasHoras, setMostrandoOtrasHoras] = useState(false)
   const [enviando, setEnviando] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const estado = pedido.estado as EstadoPedido
   const modoEntrega = pedido.modo_entrega as ModoEntrega
@@ -30,29 +49,39 @@ export function TarjetaPedido({ pedido, perfil, franjas, onActualizado }: Props)
 
   async function confirmarFranja(franja: { inicio: string; fin: string; loAntesPosible: boolean }) {
     setEnviando(true)
+    setError(null)
     const respuesta = await fetch(`/api/panel/pedidos/${pedido.id}/confirmar-franja`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(franja),
     })
-    if (respuesta.ok) onActualizado(await respuesta.json())
+    if (respuesta.ok) {
+      onActualizado(await respuesta.json())
+      // El selector de horas solo se cierra si la franja quedó confirmada: al
+      // fallar es justo cuando hay que seguir viendo qué se intentó.
+      setMostrandoOtrasHoras(false)
+    } else {
+      setError(await mensajeDeError(respuesta))
+    }
     setEnviando(false)
-    setMostrandoOtrasHoras(false)
   }
 
   async function avanzar(aFase: EstadoPedido) {
     setEnviando(true)
+    setError(null)
     const respuesta = await fetch(`/api/panel/pedidos/${pedido.id}/avanzar`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ aFase }),
     })
     if (respuesta.ok) onActualizado(await respuesta.json())
+    else setError(await mensajeDeError(respuesta))
     setEnviando(false)
   }
 
   async function aceptarYEmpezar() {
     setEnviando(true)
+    setError(null)
     const respuestaFranja = await fetch(`/api/panel/pedidos/${pedido.id}/confirmar-franja`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -62,18 +91,24 @@ export function TarjetaPedido({ pedido, perfil, franjas, onActualizado }: Props)
         loAntesPosible: true,
       }),
     })
-    if (respuestaFranja.ok) {
-      const respuestaAvanzar = await fetch(`/api/panel/pedidos/${pedido.id}/avanzar`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ aFase: 'en_preparacion' }),
-      })
-      if (respuestaAvanzar.ok) onActualizado(await respuestaAvanzar.json())
+    if (!respuestaFranja.ok) {
+      setError(await mensajeDeError(respuestaFranja))
+      setEnviando(false)
+      return
     }
+
+    const respuestaAvanzar = await fetch(`/api/panel/pedidos/${pedido.id}/avanzar`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ aFase: 'en_preparacion' }),
+    })
+    if (respuestaAvanzar.ok) onActualizado(await respuestaAvanzar.json())
+    else setError(await mensajeDeError(respuestaAvanzar))
     setEnviando(false)
   }
 
   async function marcarLinea(lineaId: string, preparada: boolean) {
+    setError(null)
     const respuesta = await fetch(`/api/panel/pedidos/${pedido.id}/lineas/${lineaId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -84,6 +119,8 @@ export function TarjetaPedido({ pedido, perfil, franjas, onActualizado }: Props)
         ...pedido,
         pedido_lineas: pedido.pedido_lineas.map((l) => (l.id === lineaId ? { ...l, preparada } : l)),
       })
+    } else {
+      setError(await mensajeDeError(respuesta))
     }
   }
 
@@ -148,6 +185,8 @@ export function TarjetaPedido({ pedido, perfil, franjas, onActualizado }: Props)
       {pedido.notas && <p className="mt-3 rounded-lg bg-amber-500/10 p-2 text-sm text-amber-400">{pedido.notas}</p>}
 
       <p className="mt-3 font-bold">{formatearPrecio(pedido.total_centimos)}</p>
+
+      {error && <p className="mt-3 rounded-lg bg-amber-500/10 p-2 text-sm text-amber-400">{error}</p>}
 
       {puedeOperar && (
         <div className="mt-4 flex flex-col gap-2">
