@@ -31,3 +31,9 @@ export async function actualizarDisponibilidadExtra(id: string, disponible: bool
   const { error } = await supabase.from('extras').update({ disponible }).eq('id', id)
   if (error) throw error
 }
+
+export async function actualizarImagenArticulo(id: string, imagenUrl: string): Promise<void> {
+  const supabase = crearClienteServicio()
+  const { error } = await supabase.from('articulos').update({ imagen_url: imagenUrl }).eq('id', id)
+  if (error) throw error
+}
