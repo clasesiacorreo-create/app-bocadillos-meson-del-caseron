@@ -4,28 +4,11 @@ import { useState } from 'react'
 import { agruparFranjasPorDia, formatearHoraFranja } from '@/lib/horario'
 import type { Franja } from '@/lib/horario/tipos'
 import { formatearPrecio } from '@/lib/dinero'
+import { mensajeDeError } from '@/lib/panel/erroresApi'
 import { franjaEsInminente } from '@/lib/pedidos/tablero'
 import type { EstadoPedido, PedidoConLineas } from '@/lib/pedidos/tipos'
 import type { ModoEntrega } from '@/lib/precios/tipos'
 import type { PerfilStaff } from '@/lib/personal/tipos'
-
-const MENSAJE_GENERICO = 'No se ha podido completar la acción. Inténtalo de nuevo.'
-
-/**
- * En una pantalla de cocina, una acción que no hace nada se lee como "¿lo
- * vuelvo a pulsar?": cuando la respuesta no es `ok` hay que enseñar algo. Los
- * endpoints del panel responden `{ error: string }`; si el cuerpo no llega o
- * no lo trae, se recurre al mensaje genérico.
- */
-async function mensajeDeError(respuesta: Response): Promise<string> {
-  try {
-    const cuerpo = (await respuesta.json()) as { error?: unknown }
-    if (typeof cuerpo.error === 'string' && cuerpo.error.trim() !== '') return cuerpo.error
-  } catch {
-    // Cuerpo vacío o que no es JSON: se usa el mensaje genérico.
-  }
-  return MENSAJE_GENERICO
-}
 
 type Props = {
   pedido: PedidoConLineas

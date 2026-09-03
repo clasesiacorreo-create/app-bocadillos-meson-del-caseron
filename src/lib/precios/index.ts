@@ -42,3 +42,14 @@ export function calcularResumen(
     faltaParaEnvioGratisCentimos,
   }
 }
+
+/**
+ * Los dos umbrales miden el mismo subtotal pero significan cosas opuestas:
+ * uno bloquea el pedido por debajo, el otro libera el envío por encima. Si
+ * el segundo no fuera estrictamente mayor que el primero, el envío saldría
+ * gratis en todo pedido que se pudiera hacer, y el ajuste dejaría de tener
+ * efecto real.
+ */
+export function umbralesValidos(pedidoMinimoCentimos: number, envioGratisDesdeCentimos: number | null): boolean {
+  return envioGratisDesdeCentimos === null || envioGratisDesdeCentimos > pedidoMinimoCentimos
+}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatearPrecio } from '.'
+import { formatearPrecio, parsearPrecio } from '.'
 
 // Ojo: Intl en es-ES separa el importe del símbolo con un espacio duro (U+00A0),
 // no con un espacio normal. Si el test se escribe con espacio normal, falla y
@@ -21,5 +21,35 @@ describe('formatearPrecio', () => {
 
   it('formatea importes de cuatro cifras', () => {
     expect(formatearPrecio(123456)).toBe(`1234,56${ESPACIO_DURO}€`)
+  })
+})
+
+describe('parsearPrecio', () => {
+  it('acepta coma decimal', () => {
+    expect(parsearPrecio('2,50')).toBe(250)
+  })
+
+  it('acepta punto decimal', () => {
+    expect(parsearPrecio('2.50')).toBe(250)
+  })
+
+  it('acepta un entero', () => {
+    expect(parsearPrecio('5')).toBe(500)
+  })
+
+  it('acepta cero', () => {
+    expect(parsearPrecio('0')).toBe(0)
+  })
+
+  it('rechaza texto vacío', () => {
+    expect(parsearPrecio('')).toBeNull()
+  })
+
+  it('rechaza texto que no es un número', () => {
+    expect(parsearPrecio('abc')).toBeNull()
+  })
+
+  it('rechaza negativos', () => {
+    expect(parsearPrecio('-1')).toBeNull()
   })
 })

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { calcularResumen, precioLinea } from '.'
+import { calcularResumen, precioLinea, umbralesValidos } from '.'
 import type { LineaCarrito, ReglasPedido } from './tipos'
 
 const REGLAS: ReglasPedido = {
@@ -112,5 +112,23 @@ describe('calcularResumen en recogida', () => {
     expect(r.alcanzaMinimo).toBe(true)
     expect(r.faltaParaMinimoCentimos).toBe(0)
     expect(r.faltaParaEnvioGratisCentimos).toBeNull()
+  })
+})
+
+describe('umbralesValidos', () => {
+  it('es válido cuando el envío gratis está desactivado', () => {
+    expect(umbralesValidos(1000, null)).toBe(true)
+  })
+
+  it('es válido cuando el envío gratis supera el mínimo', () => {
+    expect(umbralesValidos(1000, 2000)).toBe(true)
+  })
+
+  it('no es válido cuando el envío gratis es igual al mínimo', () => {
+    expect(umbralesValidos(1000, 1000)).toBe(false)
+  })
+
+  it('no es válido cuando el envío gratis es menor que el mínimo', () => {
+    expect(umbralesValidos(1000, 500)).toBe(false)
   })
 })
