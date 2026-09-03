@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { formatearHoraFranja } from '@/lib/horario'
+import { agruparFranjasPorDia, formatearHoraFranja } from '@/lib/horario'
 import type { Franja } from '@/lib/horario/tipos'
 import { calcularResumen, precioLinea } from '@/lib/precios'
 import type { ReglasPedido } from '@/lib/precios/tipos'
@@ -40,6 +40,8 @@ export function FormularioCheckout({ reglas, franjas }: Props) {
   const [errorRed, setErrorRed] = useState(false)
 
   const resumen = calcularResumen(lineas, modoEntrega, reglas)
+  const franjaLoAntesPosible = franjas.find((f) => f.loAntesPosible)
+  const gruposFranjas = agruparFranjasPorDia(franjas, new Date())
 
   async function enviarPedido() {
     setEnviando(true)
@@ -223,22 +225,37 @@ export function FormularioCheckout({ reglas, franjas }: Props) {
         <p className="mb-2 text-sm text-neutral-400">
           Es una petición. El restaurante la confirmará al aceptar el pedido.
         </p>
-        <div className="flex flex-col gap-2">
-          {franjas.map((franja) => (
-            <label
-              key={franja.inicio + franja.fin + String(franja.loAntesPosible)}
-              className="flex items-center gap-3 rounded-lg border border-neutral-700 p-3"
-            >
+        <div className="flex flex-col gap-3">
+          {franjaLoAntesPosible && (
+            <label className="flex items-center gap-3 rounded-lg border border-neutral-700 p-3">
               <input
                 type="radio"
                 name="franja"
-                checked={franja === franjaElegida}
-                onChange={() => setFranjaElegida(franja)}
+                checked={franjaElegida === franjaLoAntesPosible}
+                onChange={() => setFranjaElegida(franjaLoAntesPosible)}
               />
-              {franja.loAntesPosible
-                ? 'Lo antes posible'
-                : `${formatearHoraFranja(franja.inicio)}–${formatearHoraFranja(franja.fin)}`}
+              Lo antes posible
             </label>
+          )}
+
+          {gruposFranjas.map((grupo) => (
+            <div key={grupo.etiqueta} className="flex flex-col gap-2">
+              <p className="text-xs font-semibold uppercase tracking-wide text-neutral-400">{grupo.etiqueta}</p>
+              {grupo.franjas.map((franja) => (
+                <label
+                  key={franja.inicio + franja.fin}
+                  className="flex items-center gap-3 rounded-lg border border-neutral-700 p-3"
+                >
+                  <input
+                    type="radio"
+                    name="franja"
+                    checked={franja === franjaElegida}
+                    onChange={() => setFranjaElegida(franja)}
+                  />
+                  {formatearHoraFranja(franja.inicio)}–{formatearHoraFranja(franja.fin)}
+                </label>
+              ))}
+            </div>
           ))}
         </div>
       </fieldset>

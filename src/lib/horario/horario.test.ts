@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { formatearHoraFranja, generarFranjas, restauranteAbierto } from '.'
-import type { HorarioSemanal, ReglasHorario } from './tipos'
+import { agruparFranjasPorDia, formatearHoraFranja, generarFranjas, restauranteAbierto } from '.'
+import type { Franja, HorarioSemanal, ReglasHorario } from './tipos'
 
 const SIN_TRAMOS: HorarioSemanal = {
   lunes: [], martes: [], miercoles: [], jueves: [], viernes: [], sabado: [], domingo: [],
@@ -161,5 +161,69 @@ describe('formatearHoraFranja', () => {
   it('pinta la hora en Europe/Madrid con dos dígitos, según la época del año', () => {
     expect(formatearHoraFranja('2026-01-15T12:30:00.000Z')).toBe('13:30')
     expect(formatearHoraFranja('2026-07-15T11:00:00.000Z')).toBe('13:00')
+  })
+})
+
+describe('agruparFranjasPorDia', () => {
+  // 2026-01-15 es jueves. Tramo 13:00-14:00 Madrid (invierno, UTC+1) = 12:00-13:00 UTC.
+  const r = reglas({
+    horario: {
+      ...SIN_TRAMOS,
+      jueves: [{ desde: '13:00', hasta: '16:00' }],
+      viernes: [{ desde: '13:00', hasta: '14:00' }],
+    },
+  })
+
+  it('agrupa las franjas de hoy y mañana en ese orden, con esas etiquetas', () => {
+    const ahora = new Date('2026-01-15T13:00:00Z') // 14:00 Madrid, dentro del tramo de hoy
+    const franjas = generarFranjas(r, ahora)
+    const grupos = agruparFranjasPorDia(franjas, ahora)
+
+    expect(grupos.map((g) => g.etiqueta)).toEqual(['Hoy', 'Mañana'])
+    expect(grupos[0].franjas).toEqual([
+      { inicio: '2026-01-15T13:00:00.000Z', fin: '2026-01-15T13:30:00.000Z', loAntesPosible: false },
+      { inicio: '2026-01-15T13:30:00.000Z', fin: '2026-01-15T14:00:00.000Z', loAntesPosible: false },
+      { inicio: '2026-01-15T14:00:00.000Z', fin: '2026-01-15T14:30:00.000Z', loAntesPosible: false },
+      { inicio: '2026-01-15T14:30:00.000Z', fin: '2026-01-15T15:00:00.000Z', loAntesPosible: false },
+    ])
+    expect(grupos[1].franjas).toEqual([
+      { inicio: '2026-01-16T12:00:00.000Z', fin: '2026-01-16T12:30:00.000Z', loAntesPosible: false },
+      { inicio: '2026-01-16T12:30:00.000Z', fin: '2026-01-16T13:00:00.000Z', loAntesPosible: false },
+    ])
+  })
+
+  it('no incluye "lo antes posible" en ningún grupo', () => {
+    const ahora = new Date('2026-01-15T13:00:00Z')
+    const franjas = generarFranjas(r, ahora)
+    expect(franjas.some((f) => f.loAntesPosible)).toBe(true) // precondición: el restaurante está abierto
+
+    const grupos = agruparFranjasPorDia(franjas, ahora)
+    const totalAgrupado = grupos.reduce((total, g) => total + g.franjas.length, 0)
+    expect(totalAgrupado).toBe(franjas.filter((f) => !f.loAntesPosible).length)
+    for (const grupo of grupos) {
+      expect(grupo.franjas.every((f) => !f.loAntesPosible)).toBe(true)
+    }
+  })
+
+  it('solo genera el grupo de "Hoy" si mañana no tiene franjas', () => {
+    const soloHoy = reglas({ horario: { ...SIN_TRAMOS, jueves: [{ desde: '13:00', hasta: '14:00' }] } })
+    const ahora = new Date('2026-01-15T08:00:00Z')
+    const grupos = agruparFranjasPorDia(generarFranjas(soloHoy, ahora), ahora)
+    expect(grupos.map((g) => g.etiqueta)).toEqual(['Hoy'])
+  })
+
+  it('usa el nombre del día para una franja más allá de mañana', () => {
+    // No ocurre con generarFranjas hoy (solo mira hoy y mañana), pero la
+    // función se prueba también con datos sintéticos por si esa ventana
+    // cambia en el futuro.
+    const ahora = new Date('2026-01-15T08:00:00Z')
+    const franjaLejana: Franja = {
+      inicio: '2026-01-18T12:00:00.000Z', // domingo 18
+      fin: '2026-01-18T12:30:00.000Z',
+      loAntesPosible: false,
+    }
+    const grupos = agruparFranjasPorDia([franjaLejana], ahora)
+    expect(grupos).toHaveLength(1)
+    expect(grupos[0].etiqueta).toBe('domingo, 18 de enero')
   })
 })

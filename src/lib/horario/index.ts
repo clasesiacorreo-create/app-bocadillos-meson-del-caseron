@@ -1,4 +1,4 @@
-import type { Franja, HorarioSemanal, ReglasHorario } from './tipos'
+import type { Franja, GrupoFranjas, HorarioSemanal, ReglasHorario } from './tipos'
 
 export type * from './tipos'
 
@@ -125,4 +125,44 @@ export function formatearHoraFranja(iso: string): string {
     minute: '2-digit',
     hourCycle: 'h23',
   }).format(new Date(iso))
+}
+
+function claveDia(iso: string): string {
+  const { anio, mes, dia } = partesEnZona(new Date(iso))
+  return `${anio}-${String(mes).padStart(2, '0')}-${String(dia).padStart(2, '0')}`
+}
+
+function etiquetaFecha(iso: string): string {
+  return new Intl.DateTimeFormat('es-ES', {
+    timeZone: ZONA,
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+  }).format(new Date(iso))
+}
+
+/**
+ * Agrupa las franjas reales por día natural en Madrid, en el mismo orden en
+ * que las genera `generarFranjas` (hoy antes que mañana). "Lo antes
+ * posible" no tiene una fecha real —su `inicio`/`fin` es el instante
+ * actual, no una hora de entrega— así que se deja fuera: quien la use la
+ * muestra aparte, antes de estos grupos.
+ */
+export function agruparFranjasPorDia(franjas: Franja[], ahora: Date): GrupoFranjas[] {
+  const claveHoy = claveDia(ahora.toISOString())
+  const claveManana = claveDia(new Date(ahora.getTime() + 24 * 60 * 60000).toISOString())
+
+  const grupos = new Map<string, GrupoFranjas>()
+  for (const franja of franjas) {
+    if (franja.loAntesPosible) continue
+
+    const clave = claveDia(franja.inicio)
+    if (!grupos.has(clave)) {
+      const etiqueta = clave === claveHoy ? 'Hoy' : clave === claveManana ? 'Mañana' : etiquetaFecha(franja.inicio)
+      grupos.set(clave, { etiqueta, franjas: [] })
+    }
+    grupos.get(clave)!.franjas.push(franja)
+  }
+
+  return Array.from(grupos.values())
 }

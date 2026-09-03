@@ -22,3 +22,9 @@ export type Franja = {
   fin: string
   loAntesPosible: boolean
 }
+
+/** Franjas reales (nunca "lo antes posible") agrupadas por día natural en Madrid. */
+export type GrupoFranjas = {
+  etiqueta: string
+  franjas: Franja[]
+}
