@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { validarDatosContacto, validarLineas } from './validacion'
+import { validarDatosContacto, validarFranja, validarLineas } from './validacion'
 import type { Carta } from '@/lib/carta/tipos'
 import type { LineaParaCarrito } from '@/lib/carrito/tipos'
-import type { DatosContacto, DireccionEntrega } from './tipos'
+import type { HorarioSemanal, ReglasHorario } from '@/lib/horario/tipos'
+import type { DatosContacto, DireccionEntrega, FranjaSolicitada } from './tipos'
 
 function carta(parcial: Partial<Carta['categorias'][number]['articulos'][number]> = {}): Carta {
   return {
@@ -200,5 +201,71 @@ describe('validarDatosContacto', () => {
 
   it('no exige dirección en recogida aunque venga null', () => {
     expect(validarDatosContacto('recogida', contacto(), null)).toBeNull()
+  })
+})
+
+const SIN_TRAMOS: HorarioSemanal = {
+  lunes: [], martes: [], miercoles: [], jueves: [], viernes: [], sabado: [], domingo: [],
+}
+
+function reglasHorario(parcial: Partial<ReglasHorario> = {}): ReglasHorario {
+  return {
+    horario: SIN_TRAMOS,
+    antelacionMinimaMin: 0,
+    duracionFranjaMin: 30,
+    ...parcial,
+  }
+}
+
+describe('validarFranja', () => {
+  // 2026-01-15 es jueves. Tramo 13:00-14:00 Madrid (invierno, UTC+1) = 12:00-13:00 UTC.
+  const reglas = reglasHorario({ horario: { ...SIN_TRAMOS, jueves: [{ desde: '13:00', hasta: '14:00' }] } })
+
+  it('acepta una franja real generada a partir de las mismas reglas', () => {
+    const ahora = new Date('2026-01-15T08:00:00Z') // 09:00 Madrid, cerrado
+    const solicitada: FranjaSolicitada = {
+      inicio: '2026-01-15T12:00:00.000Z',
+      fin: '2026-01-15T12:30:00.000Z',
+      loAntesPosible: false,
+    }
+    expect(validarFranja(reglas, solicitada, ahora)).toBeNull()
+  })
+
+  it('rechaza una franja inventada fuera de horario', () => {
+    const ahora = new Date('2026-01-15T08:00:00Z')
+    const solicitada: FranjaSolicitada = {
+      inicio: '2026-01-15T03:00:00.000Z',
+      fin: '2026-01-15T03:30:00.000Z',
+      loAntesPosible: false,
+    }
+    expect(validarFranja(reglas, solicitada, ahora)).toEqual({ tipo: 'franja_no_valida' })
+  })
+
+  it('rechaza una franja "lo antes posible" si el restaurante está cerrado', () => {
+    const ahora = new Date('2026-01-15T08:00:00Z') // 09:00 Madrid, cerrado
+    const solicitada: FranjaSolicitada = { inicio: ahora.toISOString(), fin: ahora.toISOString(), loAntesPosible: true }
+    expect(validarFranja(reglas, solicitada, ahora)).toEqual({ tipo: 'franja_no_valida' })
+  })
+
+  it('acepta "lo antes posible" si el restaurante está abierto', () => {
+    const ahora = new Date('2026-01-15T12:30:00Z') // 13:30 Madrid, dentro del tramo 13:00-14:00
+    const solicitada: FranjaSolicitada = { inicio: ahora.toISOString(), fin: ahora.toISOString(), loAntesPosible: true }
+    expect(validarFranja(reglas, solicitada, ahora)).toBeNull()
+  })
+
+  it('rechaza una franja que ya no cumple la antelación mínima', () => {
+    const r = reglasHorario({
+      horario: { ...SIN_TRAMOS, jueves: [{ desde: '13:00', hasta: '15:00' }] },
+      antelacionMinimaMin: 90,
+    })
+    // La franja 12:00-12:30 UTC era válida antes, pero con antelación de 90
+    // min a las 11:00 UTC ya no lo es (ver horario.test.ts).
+    const ahora = new Date('2026-01-15T11:00:00Z')
+    const solicitada: FranjaSolicitada = {
+      inicio: '2026-01-15T12:00:00.000Z',
+      fin: '2026-01-15T12:30:00.000Z',
+      loAntesPosible: false,
+    }
+    expect(validarFranja(r, solicitada, ahora)).toEqual({ tipo: 'franja_no_valida' })
   })
 })

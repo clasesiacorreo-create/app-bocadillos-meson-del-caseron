@@ -1,8 +1,10 @@
 import { articuloDisponible, extrasParaTamano } from '@/lib/carta/reglas'
 import type { Carta } from '@/lib/carta/tipos'
 import type { LineaParaCarrito } from '@/lib/carrito/tipos'
+import { generarFranjas } from '@/lib/horario'
+import type { ReglasHorario } from '@/lib/horario/tipos'
 import type { ModoEntrega } from '@/lib/precios/tipos'
-import type { DatosContacto, DireccionEntrega, ErrorValidacionPedido } from './tipos'
+import type { DatosContacto, DireccionEntrega, ErrorValidacionPedido, FranjaSolicitada } from './tipos'
 
 /**
  * Revalida cada línea contra la carta recién leída de la base de datos. Se
@@ -103,4 +105,23 @@ export function validarDatosContacto(
   }
 
   return campos.length > 0 ? { tipo: 'datos_contacto_invalidos', campos } : null
+}
+
+/**
+ * Revalida la franja pedida contra las franjas que generarían las mismas
+ * reglas ahora mismo, para que no se pueda pedir una hora inventada (de
+ * madrugada, de un día cerrado...) saltándose lo que ofrece la interfaz. No
+ * se compara `inicio`/`fin` en "lo antes posible": esa franja no tiene hora
+ * real, solo importa que el restaurante esté abierto en este instante.
+ */
+export function validarFranja(reglas: ReglasHorario, solicitada: FranjaSolicitada, ahora: Date): ErrorValidacionPedido | null {
+  const franjasValidas = generarFranjas(reglas, ahora)
+
+  const coincide = franjasValidas.some((franja) =>
+    solicitada.loAntesPosible
+      ? franja.loAntesPosible
+      : !franja.loAntesPosible && franja.inicio === solicitada.inicio && franja.fin === solicitada.fin,
+  )
+
+  return coincide ? null : { tipo: 'franja_no_valida' }
 }

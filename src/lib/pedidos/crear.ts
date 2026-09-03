@@ -1,12 +1,12 @@
 import { randomBytes } from 'node:crypto'
-import { obtenerCarta, obtenerReglas } from '@/lib/carta/consultas'
+import { obtenerAjustesHorario, obtenerCarta, obtenerReglas } from '@/lib/carta/consultas'
 import type { Carta } from '@/lib/carta/tipos'
 import type { LineaParaCarrito } from '@/lib/carrito/tipos'
 import { calcularResumen } from '@/lib/precios'
 import type { LineaCarrito } from '@/lib/precios/tipos'
 import { crearClienteServicio } from '@/lib/supabase/cliente-servicio'
 import type { ErrorValidacionPedido, PedidoCreado, SolicitudPedido } from './tipos'
-import { validarDatosContacto, validarLineas } from './validacion'
+import { validarDatosContacto, validarFranja, validarLineas } from './validacion'
 
 function generarCodigoPublico(): string {
   // Aleatorio, no correlativo: un correlativo permitiría leer los pedidos de
@@ -74,6 +74,10 @@ export async function crearPedidoPendiente(
   if (!resumen.alcanzaMinimo) {
     return { ok: false, error: { tipo: 'bajo_minimo', faltaCentimos: resumen.faltaParaMinimoCentimos } }
   }
+
+  const ajustesHorario = await obtenerAjustesHorario()
+  const errorFranja = validarFranja(ajustesHorario, solicitud.franjaSolicitada, new Date())
+  if (errorFranja) return { ok: false, error: errorFranja }
 
   const supabase = crearClienteServicio()
 
