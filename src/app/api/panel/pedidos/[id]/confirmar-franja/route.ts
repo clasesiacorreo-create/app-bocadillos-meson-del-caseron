@@ -1,8 +1,11 @@
 import { NextResponse } from 'next/server'
-import { puedeConfirmarFranja } from '@/lib/estados'
+import { obtenerAjustesHorario } from '@/lib/carta/consultas'
+import { puedeConfirmarFranja, puedeVerPedido } from '@/lib/estados'
 import { obtenerPerfilStaff } from '@/lib/personal/sesion'
-import { confirmarFranjaPedido } from '@/lib/pedidos/panel'
-import type { FranjaSolicitada } from '@/lib/pedidos/tipos'
+import { confirmarFranjaPedido, obtenerPedidoPanelPorId } from '@/lib/pedidos/panel'
+import { validarFranja } from '@/lib/pedidos/validacion'
+import { crearClienteServicio } from '@/lib/supabase/cliente-servicio'
+import type { EstadoPedido, FranjaSolicitada } from '@/lib/pedidos/tipos'
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -10,7 +13,43 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   if (!perfil) return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
   if (!puedeConfirmarFranja(perfil.rol)) return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
 
-  const franja = (await req.json()) as FranjaSolicitada
+  const pedidoActual = await obtenerPedidoPanelPorId(crearClienteServicio(), id)
+  if (!pedidoActual) return NextResponse.json({ error: 'No encontrado' }, { status: 404 })
+
+  // La lectura de arriba usa la clave de servicio, que se salta RLS: sin esta
+  // comprobación este endpoint devolvería el pedido entero (dirección,
+  // teléfono, líneas, totales) a un rol al que la política de la migración
+  // 0004 se lo oculta, como cocina con un pedido aún sin cobrar.
+  if (!puedeVerPedido(perfil.rol, pedidoActual.estado as EstadoPedido)) {
+    return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
+  }
+
+  const cuerpo = (await req.json()) as Partial<FranjaSolicitada> | null
+  if (
+    !cuerpo ||
+    typeof cuerpo.inicio !== 'string' ||
+    typeof cuerpo.fin !== 'string' ||
+    typeof cuerpo.loAntesPosible !== 'boolean'
+  ) {
+    return NextResponse.json({ error: 'La franja recibida no tiene el formato esperado.' }, { status: 422 })
+  }
+  const franja: FranjaSolicitada = {
+    inicio: cuerpo.inicio,
+    fin: cuerpo.fin,
+    loAntesPosible: cuerpo.loAntesPosible,
+  }
+
+  // Misma revalidación que en el checkout del cliente: una franja obsoleta o
+  // inventada acabaría escrita como hora de entrega en la página de
+  // seguimiento del cliente.
+  const errorFranja = validarFranja(await obtenerAjustesHorario(), franja, new Date())
+  if (errorFranja) {
+    return NextResponse.json(
+      { error: 'Esa franja ya no es válida. Recarga el panel para ver las horas disponibles.', tipo: errorFranja.tipo },
+      { status: 422 },
+    )
+  }
+
   const pedido = await confirmarFranjaPedido(id, franja)
   return NextResponse.json(pedido)
 }

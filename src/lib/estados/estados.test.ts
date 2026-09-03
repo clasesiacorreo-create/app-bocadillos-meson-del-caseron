@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { puedeConfirmarFranja, transicionPermitida } from '.'
+import { puedeConfirmarFranja, puedeVerPedido, transicionPermitida } from '.'
 
 describe('transicionPermitida', () => {
   it.each([
@@ -45,5 +45,23 @@ describe('puedeConfirmarFranja', () => {
 
   it('el repartidor no puede confirmar la franja', () => {
     expect(puedeConfirmarFranja('repartidor')).toBe(false)
+  })
+})
+
+describe('puedeVerPedido', () => {
+  it('admin ve cualquier pedido, incluso uno sin cobrar', () => {
+    expect(puedeVerPedido('admin', 'pendiente_pago')).toBe(true)
+    expect(puedeVerPedido('admin', 'nuevo')).toBe(true)
+    expect(puedeVerPedido('admin', 'entregado')).toBe(true)
+  })
+
+  it('cocina no ve un pedido que aún no se ha cobrado', () => {
+    expect(puedeVerPedido('cocina', 'pendiente_pago')).toBe(false)
+    expect(puedeVerPedido('cocina', 'nuevo')).toBe(true)
+    expect(puedeVerPedido('cocina', 'entregado')).toBe(true)
+  })
+
+  it('el repartidor todavía no tiene política de lectura', () => {
+    expect(puedeVerPedido('repartidor', 'pendiente_envio')).toBe(false)
   })
 })
