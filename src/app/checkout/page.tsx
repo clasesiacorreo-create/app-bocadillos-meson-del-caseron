@@ -14,7 +14,14 @@ export default async function PaginaCheckout() {
         </a>
         <h1 className="mt-2 text-2xl font-bold tracking-tight">Finalizar pedido</h1>
       </header>
-      <FormularioCheckout reglas={reglas} franjas={franjas} />
+      {franjas.length === 0 ? (
+        <p className="rounded-lg bg-neutral-900 p-4 text-sm text-neutral-300">
+          El restaurante está cerrado ahora mismo y no hay franjas de entrega disponibles. Vuelve a intentarlo
+          cuando abramos.
+        </p>
+      ) : (
+        <FormularioCheckout reglas={reglas} franjas={franjas} />
+      )}
     </main>
   )
 }

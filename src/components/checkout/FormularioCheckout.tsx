@@ -293,6 +293,12 @@ export function FormularioCheckout({ reglas, franjas }: Props) {
         </div>
       )}
 
+      {error?.tipo === 'error_servidor' && (
+        <p className="rounded-lg bg-amber-500/10 p-3 text-sm text-amber-400">
+          Ha habido un problema al procesar el pedido. Inténtalo de nuevo en un momento.
+        </p>
+      )}
+
       {error?.tipo === 'franja_no_valida' && (
         <p className="rounded-lg bg-amber-500/10 p-3 text-sm text-amber-400">
           La franja elegida ya no está disponible. Recarga la página para ver las franjas actuales y vuelve a
