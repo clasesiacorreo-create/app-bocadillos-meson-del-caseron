@@ -39,15 +39,20 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     loAntesPosible: cuerpo.loAntesPosible,
   }
 
-  // Misma revalidación que en el checkout del cliente: una franja obsoleta o
-  // inventada acabaría escrita como hora de entrega en la página de
-  // seguimiento del cliente.
-  const errorFranja = validarFranja(await obtenerAjustesHorario(), franja, new Date())
-  if (errorFranja) {
-    return NextResponse.json(
-      { error: 'Esa franja ya no es válida. Recarga el panel para ver las horas disponibles.', tipo: errorFranja.tipo },
-      { status: 422 },
-    )
+  // Misma revalidación que en el checkout del cliente: una franja horaria
+  // concreta puede haberse quedado obsoleta en un tablero abierto todo el
+  // día. "Lo antes posible" no es una franja con hora que pueda caducar así:
+  // es la misma petición que el cliente ya hizo y pagó, y aceptarla no debe
+  // depender de si el restaurante está abierto en el instante exacto en que
+  // cocina pulsa el botón — ya se validó una vez al crear el pedido.
+  if (!franja.loAntesPosible) {
+    const errorFranja = validarFranja(await obtenerAjustesHorario(), franja, new Date())
+    if (errorFranja) {
+      return NextResponse.json(
+        { error: 'Esa franja ya no es válida. Recarga el panel para ver las horas disponibles.', tipo: errorFranja.tipo },
+        { status: 422 },
+      )
+    }
   }
 
   const pedido = await confirmarFranjaPedido(id, franja)

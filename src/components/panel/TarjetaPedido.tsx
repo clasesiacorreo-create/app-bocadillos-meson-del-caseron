@@ -191,14 +191,24 @@ export function TarjetaPedido({ pedido, perfil, franjas, onActualizado }: Props)
       {puedeOperar && (
         <div className="mt-4 flex flex-col gap-2">
           {estado === 'nuevo' && !pedido.franja_confirmada_inicio && pedido.franja_solicitada_asap && (
-            <button
-              type="button"
-              disabled={enviando}
-              onClick={aceptarYEmpezar}
-              className="h-12 rounded-xl bg-amber-500 font-bold text-neutral-950 disabled:opacity-40"
-            >
-              Aceptar y empezar
-            </button>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                disabled={enviando}
+                onClick={aceptarYEmpezar}
+                className="h-12 flex-1 rounded-xl bg-amber-500 font-bold text-neutral-950 disabled:opacity-40"
+              >
+                Aceptar y empezar
+              </button>
+              <button
+                type="button"
+                disabled={enviando}
+                onClick={() => setMostrandoOtrasHoras((v) => !v)}
+                className="h-12 flex-1 rounded-xl border border-neutral-700 font-semibold disabled:opacity-40"
+              >
+                Proponer otra hora
+              </button>
+            </div>
           )}
 
           {estado === 'nuevo' && !pedido.franja_confirmada_inicio && !pedido.franja_solicitada_asap && (
