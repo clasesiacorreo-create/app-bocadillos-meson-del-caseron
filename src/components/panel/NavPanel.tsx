@@ -9,6 +9,7 @@ type Enlace = { href: string; etiqueta: string; roles: RolStaff[] }
 const ENLACES: Enlace[] = [
   { href: '/panel', etiqueta: 'Pedidos', roles: ['admin', 'cocina', 'repartidor'] },
   { href: '/panel/carta', etiqueta: 'Disponibilidad', roles: ['admin', 'cocina'] },
+  { href: '/panel/ajustes', etiqueta: 'Ajustes', roles: ['admin', 'cocina'] },
 ]
 
 export function NavPanel({ rol }: { rol: RolStaff }) {
