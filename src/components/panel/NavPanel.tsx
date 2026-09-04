@@ -10,6 +10,7 @@ const ENLACES: Enlace[] = [
   { href: '/panel', etiqueta: 'Pedidos', roles: ['admin', 'cocina', 'repartidor'] },
   { href: '/panel/carta', etiqueta: 'Disponibilidad', roles: ['admin', 'cocina'] },
   { href: '/panel/ajustes', etiqueta: 'Ajustes', roles: ['admin', 'cocina'] },
+  { href: '/panel/equipo', etiqueta: 'Equipo', roles: ['admin'] },
 ]
 
 export function NavPanel({ rol }: { rol: RolStaff }) {
