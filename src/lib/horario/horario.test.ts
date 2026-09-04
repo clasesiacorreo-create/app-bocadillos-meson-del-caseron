@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { agruparFranjasPorDia, formatearHoraFranja, generarFranjas, restauranteAbierto } from '.'
+import { agruparFranjasPorDia, formatearHoraFranja, generarFranjas, rangoDelDiaEnMadrid, restauranteAbierto } from '.'
 import type { Franja, HorarioSemanal, ReglasHorario } from './tipos'
 
 const SIN_TRAMOS: HorarioSemanal = {
@@ -225,5 +225,25 @@ describe('agruparFranjasPorDia', () => {
     const grupos = agruparFranjasPorDia([franjaLejana], ahora)
     expect(grupos).toHaveLength(1)
     expect(grupos[0].etiqueta).toBe('domingo, 18 de enero')
+  })
+})
+
+describe('rangoDelDiaEnMadrid', () => {
+  it('calcula la medianoche a medianoche en invierno (UTC+1)', () => {
+    // 2026-01-15 20:00 UTC = jueves 21:00 en Madrid.
+    const rango = rangoDelDiaEnMadrid(new Date('2026-01-15T20:00:00Z'))
+    expect(rango).toEqual({ desde: '2026-01-14T23:00:00.000Z', hasta: '2026-01-15T23:00:00.000Z' })
+  })
+
+  it('calcula la medianoche a medianoche en verano (UTC+2)', () => {
+    // 2026-07-15 20:00 UTC = miércoles 22:00 en Madrid.
+    const rango = rangoDelDiaEnMadrid(new Date('2026-07-15T20:00:00Z'))
+    expect(rango).toEqual({ desde: '2026-07-14T22:00:00.000Z', hasta: '2026-07-15T22:00:00.000Z' })
+  })
+
+  it('un instante justo después de medianoche sigue perteneciendo a ese mismo día', () => {
+    // 2026-01-14 23:00:01 UTC = jueves 00:00:01 en Madrid.
+    const rango = rangoDelDiaEnMadrid(new Date('2026-01-14T23:00:01Z'))
+    expect(rango.desde).toBe('2026-01-14T23:00:00.000Z')
   })
 })

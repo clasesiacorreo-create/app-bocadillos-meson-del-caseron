@@ -62,6 +62,21 @@ function fechaEnZona(
   return new Date(Date.UTC(anio, mes - 1, dia, hora, minuto) - desplazamientoMin * 60000)
 }
 
+/**
+ * Inicio (inclusive) y fin (exclusivo) del día natural en Madrid que
+ * contiene `ahora`, en ISO 8601 UTC. Se usa para acotar "hoy" en el
+ * historial y la caja del día sin repetir la aritmética de zona horaria que
+ * ya resuelven `partesEnZona` y `fechaEnZona` para las franjas.
+ */
+export function rangoDelDiaEnMadrid(ahora: Date): { desde: string; hasta: string } {
+  const partes = partesEnZona(ahora)
+  const fechaAlMedioDia = new Date(Date.UTC(partes.anio, partes.mes - 1, partes.dia, 12))
+  const desplazamiento = desplazamientoMinutos(fechaAlMedioDia)
+  const desde = fechaEnZona(partes.anio, partes.mes, partes.dia, 0, 0, desplazamiento)
+  const hasta = new Date(desde.getTime() + 24 * 60 * 60000)
+  return { desde: desde.toISOString(), hasta: hasta.toISOString() }
+}
+
 export function restauranteAbierto(reglas: ReglasHorario, ahora: Date): boolean {
   const partes = partesEnZona(ahora)
   const minutosAhora = partes.hora * 60 + partes.minuto
