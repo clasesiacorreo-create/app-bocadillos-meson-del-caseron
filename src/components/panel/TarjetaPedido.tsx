@@ -15,9 +15,10 @@ type Props = {
   perfil: PerfilStaff
   franjas: Franja[]
   onActualizado: (pedido: PedidoConLineas) => void
+  nombresRepartidores?: Record<string, string>
 }
 
-export function TarjetaPedido({ pedido, perfil, franjas, onActualizado }: Props) {
+export function TarjetaPedido({ pedido, perfil, franjas, onActualizado, nombresRepartidores = {} }: Props) {
   const [mostrandoOtrasHoras, setMostrandoOtrasHoras] = useState(false)
   const [enviando, setEnviando] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -280,6 +281,12 @@ export function TarjetaPedido({ pedido, perfil, franjas, onActualizado }: Props)
 
           {estado === 'pendiente_envio' && modoEntrega === 'domicilio' && (
             <p className="text-center text-sm text-neutral-400">Esperando a que un repartidor lo recoja.</p>
+          )}
+
+          {estado === 'en_reparto' && (
+            <p className="text-center text-sm text-neutral-400">
+              En reparto con {pedido.repartidor_id ? (nombresRepartidores[pedido.repartidor_id] ?? 'un repartidor') : 'un repartidor'}
+            </p>
           )}
         </div>
       )}

@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { obtenerAjustesHorario } from '@/lib/carta/consultas'
 import { generarFranjas } from '@/lib/horario'
 import { obtenerPerfilStaff } from '@/lib/personal/sesion'
+import { listarNombresRepartidores } from '@/lib/personal/equipo'
 import { listarPedidosPanel } from '@/lib/pedidos/panel'
 import { crearClienteServidorSesion } from '@/lib/supabase/cliente-servidor-sesion'
 import { TableroPedidos } from '@/components/panel/TableroPedidos'
@@ -12,11 +13,19 @@ export default async function PaginaPanel() {
   if (perfil.rol === 'repartidor') redirect('/reparto')
 
   const supabaseSesion = await crearClienteServidorSesion()
-  const [pedidos, ajustesHorario] = await Promise.all([
+  const [pedidos, ajustesHorario, nombresRepartidores] = await Promise.all([
     listarPedidosPanel(supabaseSesion),
     obtenerAjustesHorario(),
+    listarNombresRepartidores(),
   ])
   const franjas = generarFranjas(ajustesHorario, new Date())
 
-  return <TableroPedidos perfil={perfil} pedidosIniciales={pedidos} franjas={franjas} />
+  return (
+    <TableroPedidos
+      perfil={perfil}
+      pedidosIniciales={pedidos}
+      franjas={franjas}
+      nombresRepartidores={nombresRepartidores}
+    />
+  )
 }

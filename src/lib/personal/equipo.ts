@@ -25,6 +25,20 @@ export async function listarEquipo(): Promise<MiembroEquipo[]> {
 }
 
 /**
+ * Mapa id → nombre de todo el personal con rol `repartidor`, para que el
+ * tablero de cocina pueda mostrar quién lleva un pedido en reparto sin
+ * exponer nada más de su perfil. Se lee con la clave de servicio: la
+ * política de `perfiles_staff` de la migración 0004 solo deja a cada cual
+ * leer su propia fila.
+ */
+export async function listarNombresRepartidores(): Promise<Record<string, string>> {
+  const supabase = crearClienteServicio()
+  const { data, error } = await supabase.from('perfiles_staff').select('user_id, nombre').eq('rol', 'repartidor')
+  if (error) throw error
+  return Object.fromEntries(data.map((fila) => [fila.user_id, fila.nombre]))
+}
+
+/**
  * El perfil se crea al invitar, no al aceptar: así el rol queda decidido
  * desde el primer momento y las políticas de RLS y `obtenerPerfilStaff` ya
  * encuentran la fila en cuanto la persona abre sesión con el enlace del

@@ -154,4 +154,17 @@ describe('TarjetaPedido', () => {
     expect(screen.getByRole('button', { name: '14:00–14:30' })).toBeInTheDocument()
     expect(screen.getByText('No se ha podido completar la acción. Inténtalo de nuevo.')).toBeInTheDocument()
   })
+
+  it('muestra quién lleva el pedido cuando está en reparto', () => {
+    render(
+      <TarjetaPedido
+        pedido={pedido({ estado: 'en_reparto', repartidor_id: 'r-1' })}
+        perfil={PERFIL_COCINA}
+        franjas={[]}
+        onActualizado={() => {}}
+        nombresRepartidores={{ 'r-1': 'Luis' }}
+      />,
+    )
+    expect(screen.getByText(/Luis/)).toBeInTheDocument()
+  })
 })

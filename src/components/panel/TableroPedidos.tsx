@@ -64,9 +64,10 @@ type Props = {
   perfil: PerfilStaff
   pedidosIniciales: PedidoConLineas[]
   franjas: Franja[]
+  nombresRepartidores?: Record<string, string>
 }
 
-export function TableroPedidos({ perfil, pedidosIniciales, franjas }: Props) {
+export function TableroPedidos({ perfil, pedidosIniciales, franjas, nombresRepartidores = {} }: Props) {
   const [pedidos, setPedidos] = useState(pedidosIniciales)
   const pedidosRef = useRef(pedidos)
   useEffect(() => {
@@ -153,6 +154,7 @@ export function TableroPedidos({ perfil, pedidosIniciales, franjas }: Props) {
             perfil={perfil}
             franjas={franjas}
             onActualizado={(actualizado) => setPedidos((actuales) => fusionarPedidoEnLista(actuales, actualizado))}
+            nombresRepartidores={nombresRepartidores}
           />
         ))}
       </div>
