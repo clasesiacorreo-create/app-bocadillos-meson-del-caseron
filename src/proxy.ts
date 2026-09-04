@@ -2,10 +2,13 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 
+const RUTAS_PUBLICAS = ['/panel/iniciar-sesion', '/panel/invitacion']
+
 /**
  * Refresca la cookie de sesión de Supabase en cada petición a `/panel/**` y
  * manda a iniciar sesión a quien no la tenga. La propia página de inicio de
- * sesión queda fuera para no entrar en bucle de redirecciones.
+ * sesión y la de aceptar una invitación quedan fuera para no entrar en
+ * bucle de redirecciones ni bloquear a quien todavía no tiene sesión.
  */
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request })
@@ -29,7 +32,7 @@ export async function proxy(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  if (!user && request.nextUrl.pathname !== '/panel/iniciar-sesion') {
+  if (!user && !RUTAS_PUBLICAS.includes(request.nextUrl.pathname)) {
     return NextResponse.redirect(new URL('/panel/iniciar-sesion', request.url))
   }
 
