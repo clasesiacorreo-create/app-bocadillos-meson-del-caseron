@@ -1,6 +1,7 @@
 import { notFound, redirect } from 'next/navigation'
 import { obtenerPerfilStaff } from '@/lib/personal/sesion'
 import { listarExtrasCompletos, listarTamanos } from '@/lib/carta/escritura'
+import { obtenerCarta } from '@/lib/carta/consultas'
 import { FormularioComplemento } from '@/components/panel/FormularioComplemento'
 
 export default async function PaginaEditarComplemento({ params }: { params: Promise<{ id: string }> }) {
@@ -9,9 +10,14 @@ export default async function PaginaEditarComplemento({ params }: { params: Prom
   if (!perfil) redirect('/panel/iniciar-sesion')
   if (perfil.rol !== 'admin') redirect('/panel/carta')
 
-  const [tamanos, extras] = await Promise.all([listarTamanos(), listarExtrasCompletos()])
+  const [tamanos, extras, carta] = await Promise.all([listarTamanos(), listarExtrasCompletos(), obtenerCarta()])
   const extra = extras.find((e) => e.id === id)
   if (!extra) notFound()
+  const categorias = carta.categorias.map((c) => ({
+    id: c.id,
+    nombre: c.nombre,
+    articulos: c.articulos.map((a) => ({ id: a.id, nombre: a.nombre })),
+  }))
 
-  return <FormularioComplemento tamanos={tamanos} complementoInicial={extra} />
+  return <FormularioComplemento tamanos={tamanos} categorias={categorias} complementoInicial={extra} />
 }

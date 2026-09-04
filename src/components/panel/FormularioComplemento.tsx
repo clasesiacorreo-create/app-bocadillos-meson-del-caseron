@@ -7,16 +7,19 @@ import { parsearPrecio } from '@/lib/dinero'
 
 type Opcion = { id: string; nombre: string }
 
+type CategoriaConArticulos = { id: string; nombre: string; articulos: Opcion[] }
+
 type ComplementoInicial = {
   id: string
   nombre: string
   descripcion: string
   preciosPorTamanoId: Record<string, number>
+  articuloIds: string[]
 }
 
-type Props = { tamanos: Opcion[]; complementoInicial?: ComplementoInicial }
+type Props = { tamanos: Opcion[]; categorias: CategoriaConArticulos[]; complementoInicial?: ComplementoInicial }
 
-export function FormularioComplemento({ tamanos, complementoInicial }: Props) {
+export function FormularioComplemento({ tamanos, categorias, complementoInicial }: Props) {
   const router = useRouter()
   const editando = complementoInicial !== undefined
 
@@ -30,8 +33,15 @@ export function FormularioComplemento({ tamanos, complementoInicial }: Props) {
     }
     return inicial
   })
+  const [articuloIds, setArticuloIds] = useState<string[]>(complementoInicial?.articuloIds ?? [])
   const [guardando, setGuardando] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  function alternarArticulo(articuloId: string) {
+    setArticuloIds((actual) =>
+      actual.includes(articuloId) ? actual.filter((id) => id !== articuloId) : [...actual, articuloId],
+    )
+  }
 
   async function guardar() {
     setError(null)
@@ -52,7 +62,7 @@ export function FormularioComplemento({ tamanos, complementoInicial }: Props) {
     }
 
     setGuardando(true)
-    const datos = { nombre, descripcion, preciosPorTamanoId }
+    const datos = { nombre, descripcion, preciosPorTamanoId, articuloIds }
     const respuesta = await fetch(
       editando ? `/api/panel/carta/complementos/${complementoInicial!.id}` : '/api/panel/carta/complementos',
       {
@@ -118,6 +128,41 @@ export function FormularioComplemento({ tamanos, complementoInicial }: Props) {
               className="w-24 rounded-lg border border-neutral-700 bg-neutral-800 p-2"
             />
           </label>
+        ))}
+      </fieldset>
+
+      <fieldset className="flex flex-col gap-3">
+        <legend className="mb-1 text-sm font-semibold uppercase tracking-wide">Productos</legend>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => setArticuloIds(categorias.flatMap((c) => c.articulos.map((a) => a.id)))}
+            className="rounded-lg border border-neutral-700 px-3 py-1.5 text-sm"
+          >
+            Seleccionar todos
+          </button>
+          <button
+            type="button"
+            onClick={() => setArticuloIds([])}
+            className="rounded-lg border border-neutral-700 px-3 py-1.5 text-sm"
+          >
+            Ninguno
+          </button>
+        </div>
+        {categorias.map((categoria) => (
+          <div key={categoria.id} className="flex flex-col gap-1">
+            <p className="text-sm font-medium text-neutral-400">{categoria.nombre}</p>
+            {categoria.articulos.map((articulo) => (
+              <label key={articulo.id} className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={articuloIds.includes(articulo.id)}
+                  onChange={() => alternarArticulo(articulo.id)}
+                />
+                {articulo.nombre}
+              </label>
+            ))}
+          </div>
         ))}
       </fieldset>
 

@@ -171,6 +171,8 @@ export type DatosComplemento = {
   descripcion: string
   /** Solo los tamaños en los que se ofrece el complemento. */
   preciosPorTamanoId: Record<string, number>
+  /** Artículos a los que se aplica el complemento. */
+  articuloIds: string[]
 }
 
 export async function crearExtra(datos: DatosComplemento): Promise<{ id: string }> {
@@ -192,9 +194,22 @@ export async function crearExtra(datos: DatosComplemento): Promise<{ id: string 
     if (errorPrecios) throw errorPrecios
   }
 
+  if (datos.articuloIds.length > 0) {
+    const { error: errorArticulos } = await supabase
+      .from('articulo_extras')
+      .insert(datos.articuloIds.map((articuloId) => ({ articulo_id: articuloId, extra_id: extra.id })))
+    if (errorArticulos) throw errorArticulos
+  }
+
   return { id: extra.id }
 }
 
+/**
+ * `articulo_extras` no lleva más columna que la pareja (articulo_id,
+ * extra_id): a diferencia de `articulo_tamanos`, no hay ningún valor propio
+ * que conservar entre medias, así que reconciliar por borrado-y-reinserción
+ * no necesita leer el estado anterior primero.
+ */
 export async function actualizarExtra(id: string, datos: DatosComplemento): Promise<void> {
   const supabase = crearClienteServicio()
   const { error } = await supabase
@@ -214,6 +229,15 @@ export async function actualizarExtra(id: string, datos: DatosComplemento): Prom
     const { error: errorPrecios } = await supabase.from('extra_precios').insert(filas)
     if (errorPrecios) throw errorPrecios
   }
+
+  const { error: errorBorrarArticulos } = await supabase.from('articulo_extras').delete().eq('extra_id', id)
+  if (errorBorrarArticulos) throw errorBorrarArticulos
+  if (datos.articuloIds.length > 0) {
+    const { error: errorArticulos } = await supabase
+      .from('articulo_extras')
+      .insert(datos.articuloIds.map((articuloId) => ({ articulo_id: articuloId, extra_id: id })))
+    if (errorArticulos) throw errorArticulos
+  }
 }
 
 /** Baja real: `pedido_extras.extra_id` apunta con `on delete set null` (migración 0003). */
@@ -224,12 +248,18 @@ export async function eliminarExtra(id: string): Promise<void> {
 }
 
 export async function listarExtrasCompletos(): Promise<
-  { id: string; nombre: string; descripcion: string; preciosPorTamanoId: Record<string, number> }[]
+  {
+    id: string
+    nombre: string
+    descripcion: string
+    preciosPorTamanoId: Record<string, number>
+    articuloIds: string[]
+  }[]
 > {
   const supabase = crearClienteServidor()
   const { data, error } = await supabase
     .from('extras')
-    .select('id, nombre, descripcion, extra_precios ( tamano_id, precio_centimos )')
+    .select('id, nombre, descripcion, extra_precios ( tamano_id, precio_centimos ), articulo_extras ( articulo_id )')
     .order('orden')
   if (error) throw error
   return data.map((extra) => ({
@@ -237,5 +267,6 @@ export async function listarExtrasCompletos(): Promise<
     nombre: extra.nombre,
     descripcion: extra.descripcion,
     preciosPorTamanoId: Object.fromEntries(extra.extra_precios.map((p) => [p.tamano_id, p.precio_centimos])),
+    articuloIds: extra.articulo_extras.map((a) => a.articulo_id),
   }))
 }
