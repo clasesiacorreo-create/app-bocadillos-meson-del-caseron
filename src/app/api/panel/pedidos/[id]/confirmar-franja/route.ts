@@ -6,6 +6,7 @@ import { confirmarFranjaPedido, obtenerPedidoPanelPorId } from '@/lib/pedidos/pa
 import { validarFranja } from '@/lib/pedidos/validacion'
 import { crearClienteServicio } from '@/lib/supabase/cliente-servicio'
 import type { EstadoPedido, FranjaSolicitada } from '@/lib/pedidos/tipos'
+import type { ModoEntrega } from '@/lib/precios/tipos'
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -20,7 +21,15 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   // comprobación este endpoint devolvería el pedido entero (dirección,
   // teléfono, líneas, totales) a un rol al que la política de la migración
   // 0004 se lo oculta, como cocina con un pedido aún sin cobrar.
-  if (!puedeVerPedido(perfil.rol, pedidoActual.estado as EstadoPedido)) {
+  if (
+    !puedeVerPedido(
+      perfil.rol,
+      pedidoActual.estado as EstadoPedido,
+      pedidoActual.modo_entrega as ModoEntrega,
+      pedidoActual.repartidor_id,
+      perfil.userId,
+    )
+  ) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
   }
 

@@ -45,13 +45,24 @@ export function puedeConfirmarFranja(rol: RolStaff): boolean {
 }
 
 /**
- * Refleja a propósito la política de lectura de RLS de la migración 0004
- * ("el personal lee pedidos segun su rol"): admin ve cualquier pedido, cocina
- * todos salvo los que aún no se han cobrado. Los endpoints que leen un pedido
- * con la clave de servicio —que se salta RLS— tienen que comprobarlo aquí a
- * mano para no devolver por esa vía un pedido que el rol no podría leer por su
- * cuenta. Si cambia la política SQL, hay que cambiar también esta función.
+ * Espejo exacto de la política de lectura de la migración 0004 (admin y
+ * cocina) y 0006 (repartidor). Si cambia la política SQL, hay que cambiar
+ * también esta función: son las dos mitades de la misma comprobación, una en
+ * la base de datos y otra en los endpoints que leen con la clave de servicio
+ * y por tanto se saltan RLS.
  */
-export function puedeVerPedido(rol: RolStaff, estado: EstadoPedido): boolean {
-  return rol === 'admin' || (rol === 'cocina' && estado !== 'pendiente_pago')
+export function puedeVerPedido(
+  rol: RolStaff,
+  estado: EstadoPedido,
+  modoEntrega: ModoEntrega,
+  repartidorId: string | null,
+  usuarioId: string,
+): boolean {
+  return (
+    rol === 'admin' ||
+    (rol === 'cocina' && estado !== 'pendiente_pago') ||
+    (rol === 'repartidor' &&
+      modoEntrega === 'domicilio' &&
+      (estado === 'pendiente_envio' || (estado === 'en_reparto' && repartidorId === usuarioId)))
+  )
 }

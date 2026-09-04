@@ -50,18 +50,35 @@ describe('puedeConfirmarFranja', () => {
 
 describe('puedeVerPedido', () => {
   it('admin ve cualquier pedido, incluso uno sin cobrar', () => {
-    expect(puedeVerPedido('admin', 'pendiente_pago')).toBe(true)
-    expect(puedeVerPedido('admin', 'nuevo')).toBe(true)
-    expect(puedeVerPedido('admin', 'entregado')).toBe(true)
+    expect(puedeVerPedido('admin', 'pendiente_pago', 'domicilio', null, 'u-1')).toBe(true)
+    expect(puedeVerPedido('admin', 'nuevo', 'domicilio', null, 'u-1')).toBe(true)
+    expect(puedeVerPedido('admin', 'entregado', 'domicilio', null, 'u-1')).toBe(true)
   })
 
   it('cocina no ve un pedido que aún no se ha cobrado', () => {
-    expect(puedeVerPedido('cocina', 'pendiente_pago')).toBe(false)
-    expect(puedeVerPedido('cocina', 'nuevo')).toBe(true)
-    expect(puedeVerPedido('cocina', 'entregado')).toBe(true)
+    expect(puedeVerPedido('cocina', 'pendiente_pago', 'domicilio', null, 'u-1')).toBe(false)
+    expect(puedeVerPedido('cocina', 'nuevo', 'domicilio', null, 'u-1')).toBe(true)
+    expect(puedeVerPedido('cocina', 'entregado', 'domicilio', null, 'u-1')).toBe(true)
   })
 
-  it('el repartidor todavía no tiene política de lectura', () => {
-    expect(puedeVerPedido('repartidor', 'pendiente_envio')).toBe(false)
+  it('el repartidor ve los pedidos a domicilio listos para recoger, sean de quien sean', () => {
+    expect(puedeVerPedido('repartidor', 'pendiente_envio', 'domicilio', null, 'u-1')).toBe(true)
+    expect(puedeVerPedido('repartidor', 'pendiente_envio', 'domicilio', 'otro', 'u-1')).toBe(true)
+  })
+
+  it('el repartidor no ve pedidos de recogida en local', () => {
+    expect(puedeVerPedido('repartidor', 'pendiente_envio', 'recogida', null, 'u-1')).toBe(false)
+  })
+
+  it('el repartidor solo ve en reparto los pedidos que él mismo lleva', () => {
+    expect(puedeVerPedido('repartidor', 'en_reparto', 'domicilio', 'u-1', 'u-1')).toBe(true)
+    expect(puedeVerPedido('repartidor', 'en_reparto', 'domicilio', 'otro', 'u-1')).toBe(false)
+  })
+
+  it('el repartidor no ve fases anteriores ni el pedido ya entregado', () => {
+    expect(puedeVerPedido('repartidor', 'pendiente_pago', 'domicilio', null, 'u-1')).toBe(false)
+    expect(puedeVerPedido('repartidor', 'nuevo', 'domicilio', null, 'u-1')).toBe(false)
+    expect(puedeVerPedido('repartidor', 'en_preparacion', 'domicilio', null, 'u-1')).toBe(false)
+    expect(puedeVerPedido('repartidor', 'entregado', 'domicilio', 'u-1', 'u-1')).toBe(false)
   })
 })
