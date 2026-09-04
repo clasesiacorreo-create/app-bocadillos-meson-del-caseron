@@ -65,12 +65,17 @@ export async function confirmarFranjaPedido(pedidoId: string, franja: FranjaSoli
 /**
  * Avanza el pedido a la siguiente fase, condicionado al estado anterior: si
  * otra persona ya lo movió, devuelve `null` en vez de retroceder el pedido o
- * duplicar la entrega.
+ * duplicar la entrega. Cuando `repartidorId` llega, se escribe en el mismo
+ * `UPDATE` condicionado: así, si dos repartidores pulsan "Recojo este" a la
+ * vez, el segundo pierde la condición `estado = pendiente_envio` en cuanto
+ * el primero gana, y no hay una ventana en la que ambos puedan quedar
+ * asignados al mismo pedido.
  */
 export async function avanzarEstadoPedido(
   pedidoId: string,
   estadoActual: EstadoPedido,
   estadoDestino: EstadoPedido,
+  repartidorId?: string,
 ): Promise<PedidoConLineas | null> {
   const supabase = crearClienteServicio()
   const { data, error } = await supabase
@@ -78,6 +83,7 @@ export async function avanzarEstadoPedido(
     .update({
       estado: estadoDestino,
       ...(estadoDestino === 'entregado' ? { entregado_en: new Date().toISOString() } : {}),
+      ...(repartidorId ? { repartidor_id: repartidorId } : {}),
     })
     .eq('id', pedidoId)
     .eq('estado', estadoActual)
