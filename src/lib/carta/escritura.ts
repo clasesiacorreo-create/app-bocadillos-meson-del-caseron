@@ -151,3 +151,77 @@ export async function listarExtrasBase(): Promise<{ id: string; nombre: string }
   if (error) throw error
   return data
 }
+
+export type DatosComplemento = {
+  nombre: string
+  descripcion: string
+  /** Solo los tamaños en los que se ofrece el complemento. */
+  preciosPorTamanoId: Record<string, number>
+}
+
+export async function crearExtra(datos: DatosComplemento): Promise<{ id: string }> {
+  const supabase = crearClienteServicio()
+  const { data: extra, error } = await supabase
+    .from('extras')
+    .insert({ nombre: datos.nombre, descripcion: datos.descripcion })
+    .select('id')
+    .single()
+  if (error) throw error
+
+  const filas = Object.entries(datos.preciosPorTamanoId).map(([tamanoId, precioCentimos]) => ({
+    extra_id: extra.id,
+    tamano_id: tamanoId,
+    precio_centimos: precioCentimos,
+  }))
+  if (filas.length > 0) {
+    const { error: errorPrecios } = await supabase.from('extra_precios').insert(filas)
+    if (errorPrecios) throw errorPrecios
+  }
+
+  return { id: extra.id }
+}
+
+export async function actualizarExtra(id: string, datos: DatosComplemento): Promise<void> {
+  const supabase = crearClienteServicio()
+  const { error } = await supabase
+    .from('extras')
+    .update({ nombre: datos.nombre, descripcion: datos.descripcion })
+    .eq('id', id)
+  if (error) throw error
+
+  const { error: errorBorrar } = await supabase.from('extra_precios').delete().eq('extra_id', id)
+  if (errorBorrar) throw errorBorrar
+  const filas = Object.entries(datos.preciosPorTamanoId).map(([tamanoId, precioCentimos]) => ({
+    extra_id: id,
+    tamano_id: tamanoId,
+    precio_centimos: precioCentimos,
+  }))
+  if (filas.length > 0) {
+    const { error: errorPrecios } = await supabase.from('extra_precios').insert(filas)
+    if (errorPrecios) throw errorPrecios
+  }
+}
+
+/** Baja real: `pedido_extras.extra_id` apunta con `on delete set null` (migración 0003). */
+export async function eliminarExtra(id: string): Promise<void> {
+  const supabase = crearClienteServicio()
+  const { error } = await supabase.from('extras').delete().eq('id', id)
+  if (error) throw error
+}
+
+export async function listarExtrasCompletos(): Promise<
+  { id: string; nombre: string; descripcion: string; preciosPorTamanoId: Record<string, number> }[]
+> {
+  const supabase = crearClienteServidor()
+  const { data, error } = await supabase
+    .from('extras')
+    .select('id, nombre, descripcion, extra_precios ( tamano_id, precio_centimos )')
+    .order('orden')
+  if (error) throw error
+  return data.map((extra) => ({
+    id: extra.id,
+    nombre: extra.nombre,
+    descripcion: extra.descripcion,
+    preciosPorTamanoId: Object.fromEntries(extra.extra_precios.map((p) => [p.tamano_id, p.precio_centimos])),
+  }))
+}
