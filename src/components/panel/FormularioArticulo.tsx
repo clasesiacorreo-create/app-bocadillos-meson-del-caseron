@@ -8,7 +8,7 @@ import { parsearPrecio } from '@/lib/dinero'
 
 type Opcion = { id: string; nombre: string }
 
-type TamanoFormulario = { tamanoId: string; ofrecido: boolean; precioTexto: string; disponible: boolean }
+type TamanoFormulario = { tamanoId: string; ofrecido: boolean; precioTexto: string }
 
 type ArticuloInicial = {
   id: string
@@ -41,7 +41,6 @@ export function FormularioArticulo({ categorias, tamanos, extras, articuloInicia
         tamanoId: t.id,
         ofrecido: existente !== undefined,
         precioTexto: existente ? String(existente.precioCentimos / 100).replace('.', ',') : '',
-        disponible: existente?.disponible ?? true,
       }
     }),
   )
@@ -59,10 +58,6 @@ export function FormularioArticulo({ categorias, tamanos, extras, articuloInicia
     setTamanosForm((actual) => actual.map((t) => (t.tamanoId === tamanoId ? { ...t, precioTexto: texto } : t)))
   }
 
-  function cambiarDisponibleTamano(tamanoId: string, disponible: boolean) {
-    setTamanosForm((actual) => actual.map((t) => (t.tamanoId === tamanoId ? { ...t, disponible } : t)))
-  }
-
   function alternarExtra(extraId: string) {
     setExtraIds((actual) => (actual.includes(extraId) ? actual.filter((id) => id !== extraId) : [...actual, extraId]))
   }
@@ -75,14 +70,14 @@ export function FormularioArticulo({ categorias, tamanos, extras, articuloInicia
       setError('Ofrece el artículo en al menos un tamaño.')
       return
     }
-    const tamanosConPrecio: { tamanoId: string; precioCentimos: number; disponible: boolean }[] = []
+    const tamanosConPrecio: { tamanoId: string; precioCentimos: number }[] = []
     for (const t of tamanosOfrecidos) {
       const precioCentimos = parsearPrecio(t.precioTexto)
       if (precioCentimos === null) {
         setError('Revisa los precios: deben ser números válidos.')
         return
       }
-      tamanosConPrecio.push({ tamanoId: t.tamanoId, precioCentimos, disponible: t.disponible })
+      tamanosConPrecio.push({ tamanoId: t.tamanoId, precioCentimos })
     }
 
     setGuardando(true)
@@ -212,22 +207,12 @@ export function FormularioArticulo({ categorias, tamanos, extras, articuloInicia
                 {nombreTamano}
               </label>
               {t.ofrecido && (
-                <>
-                  <input
-                    value={t.precioTexto}
-                    onChange={(e) => cambiarPrecioTamano(t.tamanoId, e.target.value)}
-                    placeholder="Precio (€)"
-                    className="w-24 rounded-lg border border-neutral-700 bg-neutral-800 p-2"
-                  />
-                  <label className="flex items-center gap-1 text-sm">
-                    <input
-                      type="checkbox"
-                      checked={t.disponible}
-                      onChange={(e) => cambiarDisponibleTamano(t.tamanoId, e.target.checked)}
-                    />
-                    Disponible
-                  </label>
-                </>
+                <input
+                  value={t.precioTexto}
+                  onChange={(e) => cambiarPrecioTamano(t.tamanoId, e.target.value)}
+                  placeholder="Precio (€)"
+                  className="w-24 rounded-lg border border-neutral-700 bg-neutral-800 p-2"
+                />
               )}
             </div>
           )

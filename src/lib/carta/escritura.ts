@@ -43,7 +43,7 @@ export type DatosArticulo = {
   nombre: string
   descripcion: string
   categoriaId: string
-  tamanos: { tamanoId: string; precioCentimos: number; disponible: boolean }[]
+  tamanos: { tamanoId: string; precioCentimos: number }[]
   extraIds: string[]
 }
 
@@ -62,7 +62,7 @@ export async function crearArticulo(datos: DatosArticulo): Promise<{ id: string 
         articulo_id: articulo.id,
         tamano_id: t.tamanoId,
         precio_centimos: t.precioCentimos,
-        disponible: t.disponible,
+        disponible: true,
       })),
     )
     if (errorTamanos) throw errorTamanos
@@ -87,6 +87,13 @@ export async function crearArticulo(datos: DatosArticulo): Promise<{ id: string 
  * tamaños o complementos de los debidos hasta el siguiente guardado; no hay
  * pedidos de por medio en esta operación, así que el riesgo es solo de
  * carta, no económico.
+ *
+ * La disponibilidad de cada tamaño no viaja en `datos.tamanos`: la gestiona
+ * en exclusiva la pantalla de disponibilidad (ver `VistaDisponibilidad`), que
+ * puede cambiar en cualquier momento mientras alguien tiene este formulario
+ * abierto. Por eso se leen los valores existentes antes de borrar y se
+ * conservan al reinsertar; solo un tamaño realmente nuevo en esta edición
+ * nace disponible.
  */
 export async function actualizarArticulo(id: string, datos: DatosArticulo): Promise<void> {
   const supabase = crearClienteServicio()
@@ -96,6 +103,13 @@ export async function actualizarArticulo(id: string, datos: DatosArticulo): Prom
     .eq('id', id)
   if (error) throw error
 
+  const { data: tamanosExistentes, error: errorLeerTamanos } = await supabase
+    .from('articulo_tamanos')
+    .select('tamano_id, disponible')
+    .eq('articulo_id', id)
+  if (errorLeerTamanos) throw errorLeerTamanos
+  const disponiblePorTamanoId = new Map(tamanosExistentes.map((t) => [t.tamano_id, t.disponible]))
+
   const { error: errorBorrarTamanos } = await supabase.from('articulo_tamanos').delete().eq('articulo_id', id)
   if (errorBorrarTamanos) throw errorBorrarTamanos
   if (datos.tamanos.length > 0) {
@@ -104,7 +118,7 @@ export async function actualizarArticulo(id: string, datos: DatosArticulo): Prom
         articulo_id: id,
         tamano_id: t.tamanoId,
         precio_centimos: t.precioCentimos,
-        disponible: t.disponible,
+        disponible: disponiblePorTamanoId.get(t.tamanoId) ?? true,
       })),
     )
     if (errorTamanos) throw errorTamanos

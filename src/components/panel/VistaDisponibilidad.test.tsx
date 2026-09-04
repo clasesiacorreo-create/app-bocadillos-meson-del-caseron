@@ -67,6 +67,32 @@ describe('VistaDisponibilidad', () => {
     )
   })
 
+  it('muestra el interruptor del tamaño aunque el artículo solo tenga uno', () => {
+    const cartaTamanoUnico: Carta = {
+      categorias: [
+        {
+          id: 'c-2',
+          nombre: 'Especiales',
+          articulos: [
+            {
+              id: 'a-2',
+              nombre: 'La Caserona',
+              descripcion: '',
+              imagenUrl: null,
+              disponible: true,
+              tamanos: [{ id: 't-u', nombre: 'Único', precioCentimos: 600, disponible: true }],
+              extras: [],
+            },
+          ],
+        },
+      ],
+    }
+    render(<VistaDisponibilidad carta={cartaTamanoUnico} />)
+
+    expect(screen.getByRole('switch', { name: 'La Caserona' })).toBeInTheDocument()
+    expect(screen.getByRole('switch', { name: 'Único' })).toBeInTheDocument()
+  })
+
   it('revierte el cambio si el servidor falla', async () => {
     vi.stubGlobal(
       'fetch',

@@ -83,16 +83,15 @@ export function VistaDisponibilidad({ carta }: Props) {
                   disponibleInicial={articulo.disponible}
                   endpoint={`/api/panel/carta/articulos/${articulo.id}/disponibilidad`}
                 />
-                {articulo.tamanos.length > 1 &&
-                  articulo.tamanos.map((tamano) => (
-                    <FilaDisponibilidad
-                      key={tamano.id}
-                      etiqueta={tamano.nombre}
-                      disponibleInicial={tamano.disponible}
-                      endpoint={`/api/panel/carta/articulos/${articulo.id}/tamanos/${tamano.id}/disponibilidad`}
-                      indentado
-                    />
-                  ))}
+                {articulo.tamanos.map((tamano) => (
+                  <FilaDisponibilidad
+                    key={tamano.id}
+                    etiqueta={tamano.nombre}
+                    disponibleInicial={tamano.disponible}
+                    endpoint={`/api/panel/carta/articulos/${articulo.id}/tamanos/${tamano.id}/disponibilidad`}
+                    indentado
+                  />
+                ))}
               </div>
             ))}
           </div>

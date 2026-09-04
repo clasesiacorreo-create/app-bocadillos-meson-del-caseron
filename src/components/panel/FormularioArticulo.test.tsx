@@ -47,7 +47,7 @@ describe('FormularioArticulo — alta', () => {
           nombre: 'Lomo',
           descripcion: '',
           categoriaId: 'c-1',
-          tamanos: [{ tamanoId: 't-b', precioCentimos: 500, disponible: true }],
+          tamanos: [{ tamanoId: 't-b', precioCentimos: 500 }],
           extraIds: ['e-1'],
         }),
       }),
