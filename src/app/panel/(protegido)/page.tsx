@@ -9,6 +9,7 @@ import { TableroPedidos } from '@/components/panel/TableroPedidos'
 export default async function PaginaPanel() {
   const perfil = await obtenerPerfilStaff()
   if (!perfil) redirect('/panel/iniciar-sesion')
+  if (perfil.rol === 'repartidor') redirect('/reparto')
 
   const supabaseSesion = await crearClienteServidorSesion()
   const [pedidos, ajustesHorario] = await Promise.all([

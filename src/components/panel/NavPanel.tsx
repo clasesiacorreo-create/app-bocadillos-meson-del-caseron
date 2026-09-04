@@ -7,7 +7,7 @@ import type { RolStaff } from '@/lib/personal/tipos'
 type Enlace = { href: string; etiqueta: string; roles: RolStaff[] }
 
 const ENLACES: Enlace[] = [
-  { href: '/panel', etiqueta: 'Pedidos', roles: ['admin', 'cocina', 'repartidor'] },
+  { href: '/panel', etiqueta: 'Pedidos', roles: ['admin', 'cocina'] },
   { href: '/panel/carta', etiqueta: 'Disponibilidad', roles: ['admin', 'cocina'] },
   { href: '/panel/ajustes', etiqueta: 'Ajustes', roles: ['admin', 'cocina'] },
   { href: '/panel/equipo', etiqueta: 'Equipo', roles: ['admin'] },
