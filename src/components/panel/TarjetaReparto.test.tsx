@@ -71,6 +71,25 @@ describe('TarjetaReparto', () => {
     expect(screen.queryByText(/2,00 €/)).not.toBeInTheDocument()
   })
 
+  it('muestra la franja confirmada cuando existe', () => {
+    render(<TarjetaReparto pedido={pedido()} onActualizado={() => {}} />)
+    expect(screen.getByText(/confirmado 13:00–13:30/)).toBeInTheDocument()
+  })
+
+  it('muestra "Lo antes posible" cuando la franja solicitada era ASAP', () => {
+    render(
+      <TarjetaReparto
+        pedido={pedido({
+          franja_solicitada_asap: true,
+          franja_confirmada_inicio: null,
+          franja_confirmada_fin: null,
+        })}
+        onActualizado={() => {}}
+      />,
+    )
+    expect(screen.getByText('Lo antes posible')).toBeInTheDocument()
+  })
+
   it('muestra la dirección, las indicaciones y un enlace al mapa', () => {
     render(<TarjetaReparto pedido={pedido()} onActualizado={() => {}} />)
     expect(screen.getByText(/C\. Hierro 73, 2ºA/)).toBeInTheDocument()
@@ -118,5 +137,35 @@ describe('TarjetaReparto', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Recojo este' }))
 
     expect(screen.getByText('Otra persona ya movió este pedido')).toBeInTheDocument()
+  })
+
+  it('avisa a onConflicto y no a onActualizado si otro repartidor ya lo recogió (409)', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 409,
+        json: () => Promise.resolve({ error: 'Otra persona ya movió este pedido' }),
+      }),
+    )
+    const onActualizado = vi.fn()
+    const onConflicto = vi.fn()
+    render(<TarjetaReparto pedido={pedido()} onActualizado={onActualizado} onConflicto={onConflicto} />)
+
+    await userEvent.click(screen.getByRole('button', { name: 'Recojo este' }))
+
+    expect(onConflicto).toHaveBeenCalled()
+    expect(onActualizado).not.toHaveBeenCalled()
+  })
+
+  it('enseña un error de conexión y reactiva el botón si el fetch falla', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('network')))
+    render(<TarjetaReparto pedido={pedido()} onActualizado={() => {}} />)
+
+    const boton = screen.getByRole('button', { name: 'Recojo este' })
+    await userEvent.click(boton)
+
+    expect(screen.getByText('No se ha podido conectar. Comprueba tu conexión e inténtalo de nuevo.')).toBeInTheDocument()
+    expect(boton).not.toBeDisabled()
   })
 })

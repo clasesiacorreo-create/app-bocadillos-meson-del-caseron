@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { formatearHoraFranja } from '@/lib/horario'
 import { mensajeDeError } from '@/lib/panel/erroresApi'
 import { enlaceMapa } from '@/lib/pedidos/reparto'
 import type { EstadoPedido, PedidoConLineas } from '@/lib/pedidos/tipos'
@@ -8,23 +9,38 @@ import type { EstadoPedido, PedidoConLineas } from '@/lib/pedidos/tipos'
 type Props = {
   pedido: PedidoConLineas
   onActualizado: (pedido: PedidoConLineas) => void
+  onConflicto?: () => void
 }
 
-export function TarjetaReparto({ pedido, onActualizado }: Props) {
+export function TarjetaReparto({ pedido, onActualizado, onConflicto }: Props) {
   const [enviando, setEnviando] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   async function avanzar(aFase: EstadoPedido) {
     setEnviando(true)
     setError(null)
-    const respuesta = await fetch(`/api/panel/pedidos/${pedido.id}/avanzar`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ aFase }),
-    })
-    if (respuesta.ok) onActualizado(await respuesta.json())
-    else setError(await mensajeDeError(respuesta))
-    setEnviando(false)
+    try {
+      const respuesta = await fetch(`/api/panel/pedidos/${pedido.id}/avanzar`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ aFase }),
+      })
+      if (respuesta.ok) {
+        onActualizado(await respuesta.json())
+      } else if (respuesta.status === 409) {
+        // Otro repartidor ya lo recogió: a partir de ahora la política de la
+        // migración 0006 le oculta esta fila, así que ningún evento de tiempo
+        // real va a quitarla de la lista por su cuenta. Se quita aquí mismo,
+        // en cuanto el propio intento confirma que ya no es suyo.
+        onConflicto?.()
+      } else {
+        setError(await mensajeDeError(respuesta))
+      }
+    } catch {
+      setError('No se ha podido conectar. Comprueba tu conexión e inténtalo de nuevo.')
+    } finally {
+      setEnviando(false)
+    }
   }
 
   return (
@@ -35,6 +51,19 @@ export function TarjetaReparto({ pedido, onActualizado }: Props) {
           Pagado online — no cobrar
         </span>
       </header>
+
+      <p className="mt-2 font-semibold">
+        {pedido.franja_solicitada_asap
+          ? 'Lo antes posible'
+          : `${formatearHoraFranja(pedido.franja_solicitada_inicio)}–${formatearHoraFranja(pedido.franja_solicitada_fin)}`}
+        {pedido.franja_confirmada_inicio && pedido.franja_confirmada_fin && (
+          <span className="text-emerald-400">
+            {' '}
+            → confirmado {formatearHoraFranja(pedido.franja_confirmada_inicio)}–
+            {formatearHoraFranja(pedido.franja_confirmada_fin)}
+          </span>
+        )}
+      </p>
 
       <p className="mt-2 text-lg font-bold">
         {pedido.direccion_calle} {pedido.direccion_numero}

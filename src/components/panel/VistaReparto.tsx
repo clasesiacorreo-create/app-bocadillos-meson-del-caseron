@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { crearClienteNavegador } from '@/lib/supabase/cliente-navegador'
-import { actualizarCamposPedido, fusionarPedidoEnLista } from '@/lib/pedidos/tablero'
+import { actualizarCamposPedido, fusionarPedidoEnLista, ordenarPorFranja } from '@/lib/pedidos/tablero'
 import { pestanaDeReparto, type PestanaReparto } from '@/lib/pedidos/reparto'
 import type { PedidoConLineas } from '@/lib/pedidos/tipos'
 import type { PerfilStaff } from '@/lib/personal/tipos'
@@ -65,7 +65,11 @@ export function VistaReparto({ perfil, pedidosIniciales }: Props) {
     return pedidos.filter((p) => pestanaDeReparto(p, perfil.userId) === id)
   }
 
-  const pedidosDeLaPestana = pedidosDe(pestanaActiva)
+  function quitarPedido(pedidoId: string) {
+    setPedidos((actuales) => actuales.filter((p) => p.id !== pedidoId))
+  }
+
+  const pedidosDeLaPestana = ordenarPorFranja(pedidosDe(pestanaActiva))
 
   return (
     <div className="flex flex-col gap-4">
@@ -91,6 +95,7 @@ export function VistaReparto({ perfil, pedidosIniciales }: Props) {
             key={pedido.id}
             pedido={pedido}
             onActualizado={(actualizado) => setPedidos((actuales) => fusionarPedidoEnLista(actuales, actualizado))}
+            onConflicto={() => quitarPedido(pedido.id)}
           />
         ))}
       </div>

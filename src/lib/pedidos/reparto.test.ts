@@ -3,18 +3,34 @@ import { enlaceMapa, pestanaDeReparto } from './reparto'
 
 describe('pestanaDeReparto', () => {
   it('un pedido pendiente de envío va a "para repartir", sea de quien sea', () => {
-    expect(pestanaDeReparto({ estado: 'pendiente_envio', repartidor_id: null }, 'u-1')).toBe('para_repartir')
-    expect(pestanaDeReparto({ estado: 'pendiente_envio', repartidor_id: 'u-2' }, 'u-1')).toBe('para_repartir')
+    expect(
+      pestanaDeReparto({ estado: 'pendiente_envio', repartidor_id: null, modo_entrega: 'domicilio' }, 'u-1'),
+    ).toBe('para_repartir')
+    expect(
+      pestanaDeReparto({ estado: 'pendiente_envio', repartidor_id: 'u-2', modo_entrega: 'domicilio' }, 'u-1'),
+    ).toBe('para_repartir')
   })
 
   it('un pedido en reparto solo aparece en "mis entregas" para quien lo lleva', () => {
-    expect(pestanaDeReparto({ estado: 'en_reparto', repartidor_id: 'u-1' }, 'u-1')).toBe('mis_entregas')
-    expect(pestanaDeReparto({ estado: 'en_reparto', repartidor_id: 'u-2' }, 'u-1')).toBe(null)
+    expect(pestanaDeReparto({ estado: 'en_reparto', repartidor_id: 'u-1', modo_entrega: 'domicilio' }, 'u-1')).toBe(
+      'mis_entregas',
+    )
+    expect(pestanaDeReparto({ estado: 'en_reparto', repartidor_id: 'u-2', modo_entrega: 'domicilio' }, 'u-1')).toBe(
+      null,
+    )
   })
 
   it('ninguna otra fase aparece en el reparto', () => {
-    expect(pestanaDeReparto({ estado: 'nuevo', repartidor_id: null }, 'u-1')).toBe(null)
-    expect(pestanaDeReparto({ estado: 'entregado', repartidor_id: 'u-1' }, 'u-1')).toBe(null)
+    expect(pestanaDeReparto({ estado: 'nuevo', repartidor_id: null, modo_entrega: 'domicilio' }, 'u-1')).toBe(null)
+    expect(pestanaDeReparto({ estado: 'entregado', repartidor_id: 'u-1', modo_entrega: 'domicilio' }, 'u-1')).toBe(
+      null,
+    )
+  })
+
+  it('un pedido de recogida no aparece nunca en el reparto, aunque esté pendiente de envío', () => {
+    expect(
+      pestanaDeReparto({ estado: 'pendiente_envio', repartidor_id: null, modo_entrega: 'recogida' }, 'u-1'),
+    ).toBe(null)
   })
 })
 

@@ -10,9 +10,10 @@ export type PestanaReparto = 'para_repartir' | 'mis_entregas'
  * de llegar aquí.
  */
 export function pestanaDeReparto(
-  pedido: Pick<PedidoConLineas, 'estado' | 'repartidor_id'>,
+  pedido: Pick<PedidoConLineas, 'estado' | 'repartidor_id' | 'modo_entrega'>,
   usuarioId: string,
 ): PestanaReparto | null {
+  if (pedido.modo_entrega !== 'domicilio') return null
   if (pedido.estado === 'pendiente_envio') return 'para_repartir'
   if (pedido.estado === 'en_reparto' && pedido.repartidor_id === usuarioId) return 'mis_entregas'
   return null

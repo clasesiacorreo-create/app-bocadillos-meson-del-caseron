@@ -1,4 +1,5 @@
 import { act, render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { VistaReparto } from './VistaReparto'
 import type { PedidoConLineas } from '@/lib/pedidos/tipos'
@@ -120,9 +121,22 @@ describe('VistaReparto', () => {
     pedidoRemoto.actual = pedido({ id: 'p-nuevo', codigo_publico: 'zzz999', estado: 'pendiente_envio' })
     render(<VistaReparto perfil={PERFIL_REPARTIDOR} pedidosIniciales={[]} />)
 
-    await emitir('UPDATE:pedidos', { id: 'p-nuevo', estado: 'pendiente_envio' })
+    await emitir('UPDATE:pedidos', { id: 'p-nuevo', estado: 'pendiente_envio', modo_entrega: 'domicilio' })
 
     expect(await screen.findByText(/zzz999/)).toBeInTheDocument()
+  })
+
+  it('ordena los pedidos de la pestaña por franja, el más próximo primero', () => {
+    const pedidos = [
+      pedido({ id: 'p-tarde', codigo_publico: 'tarde01', franja_solicitada_inicio: '2026-01-15T13:00:00.000Z' }),
+      pedido({ id: 'p-pronto', codigo_publico: 'pronto1', franja_solicitada_inicio: '2026-01-15T12:00:00.000Z' }),
+    ]
+    render(<VistaReparto perfil={PERFIL_REPARTIDOR} pedidosIniciales={pedidos} />)
+
+    const codigos = screen.getAllByRole('article').map((articulo) => articulo.textContent)
+    const indicePronto = codigos.findIndex((texto) => texto?.includes('pronto1'))
+    const indiceTarde = codigos.findIndex((texto) => texto?.includes('tarde01'))
+    expect(indicePronto).toBeLessThan(indiceTarde)
   })
 
   it('mueve un pedido de "para repartir" a "mis entregas" en cuanto lo recoge', async () => {
@@ -135,5 +149,28 @@ describe('VistaReparto', () => {
 
     expect(screen.getByRole('button', { name: /Para repartir \(0\)/ })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Mis entregas \(1\)/ })).toBeInTheDocument()
+  })
+
+  it('quita el pedido de la lista si otro repartidor ya lo recogió (409 al pulsar "Recojo este")', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 409,
+        json: () => Promise.resolve({ error: 'Otra persona ya movió este pedido' }),
+      }),
+    )
+    render(
+      <VistaReparto
+        perfil={PERFIL_REPARTIDOR}
+        pedidosIniciales={[pedido({ id: 'p-1', codigo_publico: 'abc123', estado: 'pendiente_envio' })]}
+      />,
+    )
+    expect(screen.getByText(/abc123/)).toBeInTheDocument()
+
+    await userEvent.click(screen.getByRole('button', { name: 'Recojo este' }))
+
+    expect(screen.queryByText(/abc123/)).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Para repartir \(0\)/ })).toBeInTheDocument()
   })
 })
