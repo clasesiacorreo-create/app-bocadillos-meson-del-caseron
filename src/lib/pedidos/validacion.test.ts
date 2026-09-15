@@ -268,4 +268,17 @@ describe('validarFranja', () => {
     }
     expect(validarFranja(r, solicitada, ahora)).toEqual({ tipo: 'franja_no_valida' })
   })
+
+  it('acepta una franja aunque llegue en un formato de fecha distinto (p. ej. desde Postgres)', () => {
+    const ahora = new Date('2026-01-15T08:00:00Z') // 09:00 Madrid, cerrado
+    // Postgres/PostgREST devuelve un timestamptz sin milisegundos y con
+    // "+00:00" en vez de "Z" cuando son exactamente cero: mismo instante que
+    // genera `generarFranjas` con `.toISOString()`, pero como texto distinto.
+    const solicitada: FranjaSolicitada = {
+      inicio: '2026-01-15T12:00:00+00:00',
+      fin: '2026-01-15T12:30:00+00:00',
+      loAntesPosible: false,
+    }
+    expect(validarFranja(reglas, solicitada, ahora)).toBeNull()
+  })
 })

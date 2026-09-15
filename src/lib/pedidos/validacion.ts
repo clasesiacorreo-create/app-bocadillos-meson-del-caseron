@@ -120,7 +120,9 @@ export function validarFranja(reglas: ReglasHorario, solicitada: FranjaSolicitad
   const coincide = franjasValidas.some((franja) =>
     solicitada.loAntesPosible
       ? franja.loAntesPosible
-      : !franja.loAntesPosible && franja.inicio === solicitada.inicio && franja.fin === solicitada.fin,
+      : !franja.loAntesPosible &&
+        new Date(franja.inicio).getTime() === new Date(solicitada.inicio).getTime() &&
+        new Date(franja.fin).getTime() === new Date(solicitada.fin).getTime(),
   )
 
   return coincide ? null : { tipo: 'franja_no_valida' }
