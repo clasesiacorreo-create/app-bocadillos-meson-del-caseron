@@ -115,253 +115,257 @@ export function FormularioCheckout({ reglas, franjas }: Props) {
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      <fieldset>
-        <legend className="mb-2 text-sm font-semibold uppercase tracking-wide">Entrega</legend>
-        <div className="flex gap-2">
-          <button
-            type="button"
-            disabled={!alcanzaMinimoDomicilio}
-            onClick={() => setModoEntrega('domicilio')}
-            className={`flex-1 rounded-lg border p-3 disabled:opacity-40 ${
-              modoEfectivo === 'domicilio' ? 'border-amber-500 bg-amber-500/10' : 'border-neutral-700'
-            }`}
-          >
-            A domicilio
-          </button>
-          <button
-            type="button"
-            onClick={() => setModoEntrega('recogida')}
-            className={`flex-1 rounded-lg border p-3 ${
-              modoEfectivo === 'recogida' ? 'border-amber-500 bg-amber-500/10' : 'border-neutral-700'
-            }`}
-          >
-            Recogida en el local
-          </button>
-        </div>
-        {!alcanzaMinimoDomicilio && (
-          <p className="mt-2 text-sm text-neutral-400">
-            Te faltan {formatearPrecio(resumenDomicilio.faltaParaMinimoCentimos)} para pedir a domicilio.
-          </p>
-        )}
-      </fieldset>
+    <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:gap-11">
+      <div className="flex flex-col gap-6 lg:max-w-2xl lg:flex-1">
+        <fieldset>
+          <legend className="mb-2 text-sm font-semibold uppercase tracking-wide text-ink-soft">Entrega</legend>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              disabled={!alcanzaMinimoDomicilio}
+              onClick={() => setModoEntrega('domicilio')}
+              className={`flex-1 rounded-lg border p-3 disabled:opacity-40 ${
+                modoEfectivo === 'domicilio' ? 'border-accent bg-accent-soft' : 'border-border'
+              }`}
+            >
+              A domicilio
+            </button>
+            <button
+              type="button"
+              onClick={() => setModoEntrega('recogida')}
+              className={`flex-1 rounded-lg border p-3 ${
+                modoEfectivo === 'recogida' ? 'border-accent bg-accent-soft' : 'border-border'
+              }`}
+            >
+              Recogida en el local
+            </button>
+          </div>
+          {!alcanzaMinimoDomicilio && (
+            <p className="mt-2 text-sm text-ink-soft">
+              Te faltan {formatearPrecio(resumenDomicilio.faltaParaMinimoCentimos)} para pedir a domicilio.
+            </p>
+          )}
+        </fieldset>
 
-      <fieldset className="flex flex-col gap-3">
-        <legend className="mb-1 text-sm font-semibold uppercase tracking-wide">Tus datos</legend>
-        <label className="flex flex-col gap-1">
-          <span>Nombre</span>
-          <input
-            value={nombre}
-            onChange={(e) => setNombre(e.target.value)}
-            className="rounded-lg border border-neutral-700 bg-neutral-800 p-3"
-          />
-        </label>
-        <label className="flex flex-col gap-1">
-          <span>Apellidos</span>
-          <input
-            value={apellidos}
-            onChange={(e) => setApellidos(e.target.value)}
-            className="rounded-lg border border-neutral-700 bg-neutral-800 p-3"
-          />
-        </label>
-        <label className="flex flex-col gap-1">
-          <span>Teléfono</span>
-          <input
-            type="tel"
-            value={telefono}
-            onChange={(e) => setTelefono(e.target.value)}
-            className="rounded-lg border border-neutral-700 bg-neutral-800 p-3"
-          />
-        </label>
-      </fieldset>
-
-      {modoEfectivo === 'domicilio' && (
         <fieldset className="flex flex-col gap-3">
-          <legend className="mb-1 text-sm font-semibold uppercase tracking-wide">Dirección</legend>
+          <legend className="mb-1 text-sm font-semibold uppercase tracking-wide text-ink-soft">Tus datos</legend>
           <label className="flex flex-col gap-1">
-            <span>Calle</span>
+            <span>Nombre</span>
             <input
-              value={calle}
-              onChange={(e) => setCalle(e.target.value)}
-              className="rounded-lg border border-neutral-700 bg-neutral-800 p-3"
+              value={nombre}
+              onChange={(e) => setNombre(e.target.value)}
+              className="rounded-lg border border-border bg-surface p-3 text-ink"
             />
           </label>
-          <div className="flex gap-3">
-            <label className="flex flex-1 flex-col gap-1">
-              <span>Número</span>
-              <input
-                value={numero}
-                onChange={(e) => setNumero(e.target.value)}
-                className="rounded-lg border border-neutral-700 bg-neutral-800 p-3"
-              />
-            </label>
-            <label className="flex flex-1 flex-col gap-1">
-              <span>Piso</span>
-              <input
-                value={piso}
-                onChange={(e) => setPiso(e.target.value)}
-                className="rounded-lg border border-neutral-700 bg-neutral-800 p-3"
-              />
-            </label>
-          </div>
-          <div className="flex gap-3">
-            <label className="flex flex-1 flex-col gap-1">
-              <span>Código postal</span>
-              <input
-                value={cp}
-                onChange={(e) => setCp(e.target.value)}
-                className="rounded-lg border border-neutral-700 bg-neutral-800 p-3"
-              />
-            </label>
-            <label className="flex flex-1 flex-col gap-1">
-              <span>Ciudad</span>
-              <input
-                value={ciudad}
-                onChange={(e) => setCiudad(e.target.value)}
-                className="rounded-lg border border-neutral-700 bg-neutral-800 p-3"
-              />
-            </label>
-          </div>
           <label className="flex flex-col gap-1">
-            <span>Indicaciones para el portal (opcional)</span>
+            <span>Apellidos</span>
             <input
-              value={indicaciones}
-              onChange={(e) => setIndicaciones(e.target.value)}
-              className="rounded-lg border border-neutral-700 bg-neutral-800 p-3"
+              value={apellidos}
+              onChange={(e) => setApellidos(e.target.value)}
+              className="rounded-lg border border-border bg-surface p-3 text-ink"
+            />
+          </label>
+          <label className="flex flex-col gap-1">
+            <span>Teléfono</span>
+            <input
+              type="tel"
+              value={telefono}
+              onChange={(e) => setTelefono(e.target.value)}
+              className="rounded-lg border border-border bg-surface p-3 text-ink"
             />
           </label>
         </fieldset>
-      )}
 
-      <fieldset>
-        <legend className="mb-2 text-sm font-semibold uppercase tracking-wide">Franja de entrega</legend>
-        <p className="mb-2 text-sm text-neutral-400">
-          Es una petición. El restaurante la confirmará al aceptar el pedido.
-        </p>
-        <div className="flex flex-col gap-3">
-          {franjaLoAntesPosible && (
-            <label className="flex items-center gap-3 rounded-lg border border-neutral-700 p-3">
+        {modoEfectivo === 'domicilio' && (
+          <fieldset className="flex flex-col gap-3">
+            <legend className="mb-1 text-sm font-semibold uppercase tracking-wide text-ink-soft">Dirección</legend>
+            <label className="flex flex-col gap-1">
+              <span>Calle</span>
               <input
-                type="radio"
-                name="franja"
-                checked={franjaElegida === franjaLoAntesPosible}
-                onChange={() => setFranjaElegida(franjaLoAntesPosible)}
+                value={calle}
+                onChange={(e) => setCalle(e.target.value)}
+                className="rounded-lg border border-border bg-surface p-3 text-ink"
               />
-              Lo antes posible
             </label>
-          )}
+            <div className="flex gap-3">
+              <label className="flex flex-1 flex-col gap-1">
+                <span>Número</span>
+                <input
+                  value={numero}
+                  onChange={(e) => setNumero(e.target.value)}
+                  className="rounded-lg border border-border bg-surface p-3 text-ink"
+                />
+              </label>
+              <label className="flex flex-1 flex-col gap-1">
+                <span>Piso</span>
+                <input
+                  value={piso}
+                  onChange={(e) => setPiso(e.target.value)}
+                  className="rounded-lg border border-border bg-surface p-3 text-ink"
+                />
+              </label>
+            </div>
+            <div className="flex gap-3">
+              <label className="flex flex-1 flex-col gap-1">
+                <span>Código postal</span>
+                <input
+                  value={cp}
+                  onChange={(e) => setCp(e.target.value)}
+                  className="rounded-lg border border-border bg-surface p-3 text-ink"
+                />
+              </label>
+              <label className="flex flex-1 flex-col gap-1">
+                <span>Ciudad</span>
+                <input
+                  value={ciudad}
+                  onChange={(e) => setCiudad(e.target.value)}
+                  className="rounded-lg border border-border bg-surface p-3 text-ink"
+                />
+              </label>
+            </div>
+            <label className="flex flex-col gap-1">
+              <span>Indicaciones para el portal (opcional)</span>
+              <input
+                value={indicaciones}
+                onChange={(e) => setIndicaciones(e.target.value)}
+                className="rounded-lg border border-border bg-surface p-3 text-ink"
+              />
+            </label>
+          </fieldset>
+        )}
 
-          {gruposFranjas.map((grupo) => (
-            <div key={grupo.etiqueta} className="flex flex-col gap-2">
-              <p className="text-xs font-semibold uppercase tracking-wide text-neutral-400">{grupo.etiqueta}</p>
-              {grupo.franjas.map((franja) => (
-                <label
-                  key={franja.inicio + franja.fin}
-                  className="flex items-center gap-3 rounded-lg border border-neutral-700 p-3"
-                >
-                  <input
-                    type="radio"
-                    name="franja"
-                    checked={franja === franjaElegida}
-                    onChange={() => setFranjaElegida(franja)}
-                  />
-                  {formatearHoraFranja(franja.inicio)}–{formatearHoraFranja(franja.fin)}
-                </label>
-              ))}
+        <fieldset>
+          <legend className="mb-2 text-sm font-semibold uppercase tracking-wide text-ink-soft">Franja de entrega</legend>
+          <p className="mb-2 text-sm text-ink-soft">
+            Es una petición. El restaurante la confirmará al aceptar el pedido.
+          </p>
+          <div className="flex flex-col gap-3">
+            {franjaLoAntesPosible && (
+              <label className="flex items-center gap-3 rounded-lg border border-border p-3">
+                <input
+                  type="radio"
+                  name="franja"
+                  checked={franjaElegida === franjaLoAntesPosible}
+                  onChange={() => setFranjaElegida(franjaLoAntesPosible)}
+                />
+                Lo antes posible
+              </label>
+            )}
+
+            {gruposFranjas.map((grupo) => (
+              <div key={grupo.etiqueta} className="flex flex-col gap-2">
+                <p className="text-xs font-semibold uppercase tracking-wide text-ink-soft">{grupo.etiqueta}</p>
+                {grupo.franjas.map((franja) => (
+                  <label
+                    key={franja.inicio + franja.fin}
+                    className="flex items-center gap-3 rounded-lg border border-border p-3"
+                  >
+                    <input
+                      type="radio"
+                      name="franja"
+                      checked={franja === franjaElegida}
+                      onChange={() => setFranjaElegida(franja)}
+                    />
+                    {formatearHoraFranja(franja.inicio)}–{formatearHoraFranja(franja.fin)}
+                  </label>
+                ))}
+              </div>
+            ))}
+          </div>
+        </fieldset>
+
+        <label className="flex flex-col gap-1">
+          <span className="text-sm font-semibold uppercase tracking-wide text-ink-soft">Notas del pedido (opcional)</span>
+          <textarea
+            value={notas}
+            onChange={(e) => setNotas(e.target.value)}
+            className="rounded-lg border border-border bg-surface p-3 text-ink"
+          />
+        </label>
+      </div>
+
+      <aside className="flex flex-col gap-4 lg:sticky lg:top-8 lg:w-[380px] lg:shrink-0 lg:rounded-2xl lg:border lg:border-border lg:bg-surface lg:p-7">
+        <dl className="flex flex-col gap-1 border-t border-border pt-4 text-sm lg:border-t-0 lg:pt-0">
+          {lineas.map((linea) => (
+            <div key={linea.id} className="flex justify-between">
+              <dt>
+                {linea.cantidad}× {linea.nombreArticulo} · {linea.nombreTamano}
+              </dt>
+              <dd>{formatearPrecio(precioLinea(linea))}</dd>
             </div>
           ))}
-        </div>
-      </fieldset>
-
-      <label className="flex flex-col gap-1">
-        <span className="text-sm font-semibold uppercase tracking-wide">Notas del pedido (opcional)</span>
-        <textarea
-          value={notas}
-          onChange={(e) => setNotas(e.target.value)}
-          className="rounded-lg border border-neutral-700 bg-neutral-800 p-3"
-        />
-      </label>
-
-      <dl className="flex flex-col gap-1 border-t border-neutral-800 pt-4 text-sm">
-        {lineas.map((linea) => (
-          <div key={linea.id} className="flex justify-between">
-            <dt>
-              {linea.cantidad}× {linea.nombreArticulo} · {linea.nombreTamano}
-            </dt>
-            <dd>{formatearPrecio(precioLinea(linea))}</dd>
+          <div className="mt-2 flex justify-between font-bold">
+            <dt>Total</dt>
+            <dd>{formatearPrecio(resumen.totalCentimos)}</dd>
           </div>
-        ))}
-        <div className="mt-2 flex justify-between font-bold">
-          <dt>Total</dt>
-          <dd>{formatearPrecio(resumen.totalCentimos)}</dd>
-        </div>
-      </dl>
+        </dl>
 
-      {error?.tipo === 'articulo_no_disponible' && (
-        <div className="rounded-lg bg-amber-500/10 p-3 text-sm text-amber-400">
-          <p>«{error.nombreArticulo}» ya no está disponible.</p>
-          <button
-            type="button"
-            onClick={() => quitarArticuloAfectado(error.articuloId)}
-            className="mt-2 rounded-lg border border-amber-500 px-3 py-2"
-          >
-            Quitar del pedido
-          </button>
-        </div>
-      )}
+        {error?.tipo === 'articulo_no_disponible' && (
+          <div className="rounded-lg bg-accent-soft p-3 text-sm text-accent-dark">
+            <p>«{error.nombreArticulo}» ya no está disponible.</p>
+            <button
+              type="button"
+              onClick={() => quitarArticuloAfectado(error.articuloId)}
+              className="mt-2 rounded-lg border border-accent px-3 py-2"
+            >
+              Quitar del pedido
+            </button>
+          </div>
+        )}
 
-      {error?.tipo === 'extra_no_disponible' && (
-        <div className="rounded-lg bg-amber-500/10 p-3 text-sm text-amber-400">
-          <p>El complemento «{error.nombreExtra}» ya no está disponible.</p>
-          <button
-            type="button"
-            onClick={() => quitarExtraAfectado(error.articuloId, error.tamanoId, error.extraId)}
-            className="mt-2 rounded-lg border border-amber-500 px-3 py-2"
-          >
-            Quitar «{error.nombreExtra}» y continuar
-          </button>
-        </div>
-      )}
+        {error?.tipo === 'extra_no_disponible' && (
+          <div className="rounded-lg bg-accent-soft p-3 text-sm text-accent-dark">
+            <p>El complemento «{error.nombreExtra}» ya no está disponible.</p>
+            <button
+              type="button"
+              onClick={() => quitarExtraAfectado(error.articuloId, error.tamanoId, error.extraId)}
+              className="mt-2 rounded-lg border border-accent px-3 py-2"
+            >
+              Quitar «{error.nombreExtra}» y continuar
+            </button>
+          </div>
+        )}
 
-      {error?.tipo === 'error_servidor' && (
-        <p className="rounded-lg bg-amber-500/10 p-3 text-sm text-amber-400">
-          Ha habido un problema al procesar el pedido. Inténtalo de nuevo en un momento.
-        </p>
-      )}
+        {error?.tipo === 'error_servidor' && (
+          <p className="rounded-lg bg-accent-soft p-3 text-sm text-accent-dark">
+            Ha habido un problema al procesar el pedido. Inténtalo de nuevo en un momento.
+          </p>
+        )}
 
-      {error?.tipo === 'franja_no_valida' && (
-        <p className="rounded-lg bg-amber-500/10 p-3 text-sm text-amber-400">
-          La franja elegida ya no está disponible. Recarga la página para ver las franjas actuales y vuelve a
-          intentarlo.
-        </p>
-      )}
+        {error?.tipo === 'franja_no_valida' && (
+          <p className="rounded-lg bg-accent-soft p-3 text-sm text-accent-dark">
+            La franja elegida ya no está disponible. Recarga la página para ver las franjas actuales y vuelve a
+            intentarlo.
+          </p>
+        )}
 
-      {error?.tipo === 'datos_contacto_invalidos' && (
-        <p className="rounded-lg bg-amber-500/10 p-3 text-sm text-amber-400">
-          Revisa estos datos antes de continuar: {error.campos.join(', ')}.
-        </p>
-      )}
+        {error?.tipo === 'datos_contacto_invalidos' && (
+          <p className="rounded-lg bg-accent-soft p-3 text-sm text-accent-dark">
+            Revisa estos datos antes de continuar: {error.campos.join(', ')}.
+          </p>
+        )}
 
-      {error?.tipo === 'bajo_minimo' && (
-        <p className="rounded-lg bg-amber-500/10 p-3 text-sm text-amber-400">
-          Te faltan {formatearPrecio(error.faltaCentimos)} para llegar al pedido mínimo a domicilio.
-        </p>
-      )}
+        {error?.tipo === 'bajo_minimo' && (
+          <p className="rounded-lg bg-accent-soft p-3 text-sm text-accent-dark">
+            Te faltan {formatearPrecio(error.faltaCentimos)} para llegar al pedido mínimo a domicilio.
+          </p>
+        )}
 
-      {errorRed && (
-        <p className="rounded-lg bg-amber-500/10 p-3 text-sm text-amber-400">
-          No se ha podido conectar para enviar el pedido. Comprueba tu conexión e inténtalo de nuevo.
-        </p>
-      )}
+        {errorRed && (
+          <p className="rounded-lg bg-accent-soft p-3 text-sm text-accent-dark">
+            No se ha podido conectar para enviar el pedido. Comprueba tu conexión e inténtalo de nuevo.
+          </p>
+        )}
 
-      <button
-        type="button"
-        disabled={enviando || lineas.length === 0}
-        onClick={enviarPedido}
-        className="h-14 w-full rounded-xl bg-amber-500 text-lg font-bold text-neutral-950 disabled:opacity-40"
-      >
-        Pagar {formatearPrecio(resumen.totalCentimos)}
-      </button>
+        <button
+          type="button"
+          disabled={enviando || lineas.length === 0}
+          onClick={enviarPedido}
+          className="h-14 w-full rounded-xl bg-accent text-lg font-bold text-surface disabled:opacity-40"
+        >
+          Pagar {formatearPrecio(resumen.totalCentimos)}
+        </button>
+      </aside>
     </div>
   )
 }

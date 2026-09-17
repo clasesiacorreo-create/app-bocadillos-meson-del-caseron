@@ -183,7 +183,7 @@ describe('FormularioCheckout', () => {
     anadirLineaBajoMinimo()
     render(<FormularioCheckout reglas={REGLAS} franjas={FRANJAS} />)
 
-    expect(screen.getByRole('button', { name: 'Recogida en el local' })).toHaveClass('border-amber-500')
+    expect(screen.getByRole('button', { name: 'Recogida en el local' })).toHaveClass('border-accent')
     expect(screen.getByRole('button', { name: 'A domicilio' })).toBeDisabled()
     expect(screen.getByText(/Te faltan 2,50.*pedir a domicilio/)).toBeInTheDocument()
     expect(screen.queryByLabelText('Calle')).not.toBeInTheDocument()
