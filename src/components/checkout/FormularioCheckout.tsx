@@ -284,7 +284,7 @@ export function FormularioCheckout({ reglas, franjas }: Props) {
         </label>
       </div>
 
-      <aside className="flex flex-col gap-4 lg:sticky lg:top-8 lg:w-[380px] lg:shrink-0 lg:rounded-2xl lg:border lg:border-border lg:bg-surface lg:p-7">
+      <aside className="flex flex-col gap-4 lg:sticky lg:top-8 lg:w-[380px] lg:shrink-0 lg:rounded-2xl lg:border lg:border-border lg:bg-surface lg:p-7 lg:max-h-[calc(100vh-4rem)] lg:overflow-y-auto">
         <dl className="flex flex-col gap-1 border-t border-border pt-4 text-sm lg:border-t-0 lg:pt-0">
           {lineas.map((linea) => (
             <div key={linea.id} className="flex justify-between">
