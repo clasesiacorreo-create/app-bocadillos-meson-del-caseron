@@ -107,7 +107,12 @@ que hay que replantear el layout con `sticky` en su lugar.
 
 - El patrón de hoja inferior (`HojaInferior.tsx`) se mantiene tal cual funcionalmente
   (overlay + panel que sube desde abajo, cierre con Escape/click fuera) — solo cambia su
-  piel visual a los tokens de arriba.
+  piel visual a los tokens de arriba. En escritorio (`sm:` en adelante) el panel gana un
+  ancho máximo y queda centrado en vez de estirarse de borde a borde — **no** se
+  convierte en un drawer lateral: se evaluó esa opción y se descartó por el riesgo de
+  reconstruir un componente compartido con `FichaArticulo.tsx` frente al beneficio
+  marginal sobre una hoja centrada, que ya resuelve el problema real (que no se
+  estirase de borde a borde en pantallas anchas).
 - Selectores tipo pastilla (tamaño en la ficha, franja horaria, entrega a
   domicilio/recogida): borde 1.5px, fondo `--accent-soft` y texto `--accent-dark`
   cuando están seleccionados; borde `--border` y fondo `--surface` cuando no.
@@ -129,7 +134,7 @@ real que hay que tocar.
 | Carta (escritorio) | `MainDesktop.dc.html` | Los mismos + layout responsive nuevo (sidebar + grid) |
 | Ficha de artículo | `Ficha.dc.html` | `FichaArticulo.tsx` |
 | Carrito | `Carrito.dc.html` | `HojaCarrito.tsx`, `BarraCarrito.tsx` |
-| Carrito (escritorio) | `CarritoDesktop.dc.html` | Igual, variante de layout de escritorio (drawer lateral) |
+| Carrito (escritorio) | `CarritoDesktop.dc.html` | Igual — implementado como hoja centrada con ancho máximo (`HojaInferior.tsx`), no como el drawer lateral que mostraba el artboard; ver la nota de la sección 2 sobre por qué |
 | Checkout | `Checkout.dc.html` | `FormularioCheckout.tsx` — el bloqueo de "A domicilio" bajo mínimo ya existe en el código (commit `bf2e10b`); aquí solo cambia la piel visual |
 | Checkout (escritorio) | `CheckoutDesktop.dc.html` | Igual, layout a dos columnas (formulario + resumen fijo) |
 | Seguimiento del pedido | `Seguimiento.dc.html` | `EstadoPedido.tsx` — **añade** un timeline vertical de fases que no existe hoy (hoy es solo texto plano) |
