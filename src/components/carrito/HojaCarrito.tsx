@@ -96,7 +96,7 @@ export function HojaCarrito({ reglas, onCerrar }: Props) {
           )}
 
           {resumen.alcanzaMinimo && resumen.faltaParaEnvioGratisCentimos !== null && (
-            <p className="mt-4 rounded-lg bg-neutral-800 p-3 text-sm text-neutral-300">
+            <p className="mt-4 rounded-lg bg-rail p-3 text-sm text-ink-soft">
               Añade {formatearPrecio(resumen.faltaParaEnvioGratisCentimos)} más y el envío gratis
               es tuyo.
             </p>

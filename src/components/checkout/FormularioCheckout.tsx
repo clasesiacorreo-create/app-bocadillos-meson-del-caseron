@@ -241,12 +241,17 @@ export function FormularioCheckout({ reglas, franjas }: Props) {
           </p>
           <div className="flex flex-col gap-3">
             {franjaLoAntesPosible && (
-              <label className="flex items-center gap-3 rounded-lg border border-border p-3">
+              <label
+                className={`flex items-center gap-3 rounded-lg border p-3 ${
+                  franjaElegida === franjaLoAntesPosible ? 'border-accent bg-accent-soft text-accent-dark' : 'border-border'
+                }`}
+              >
                 <input
                   type="radio"
                   name="franja"
                   checked={franjaElegida === franjaLoAntesPosible}
                   onChange={() => setFranjaElegida(franjaLoAntesPosible)}
+                  className="accent-[var(--color-accent)]"
                 />
                 Lo antes posible
               </label>
@@ -258,13 +263,16 @@ export function FormularioCheckout({ reglas, franjas }: Props) {
                 {grupo.franjas.map((franja) => (
                   <label
                     key={franja.inicio + franja.fin}
-                    className="flex items-center gap-3 rounded-lg border border-border p-3"
+                    className={`flex items-center gap-3 rounded-lg border p-3 ${
+                      franja === franjaElegida ? 'border-accent bg-accent-soft text-accent-dark' : 'border-border'
+                    }`}
                   >
                     <input
                       type="radio"
                       name="franja"
                       checked={franja === franjaElegida}
                       onChange={() => setFranjaElegida(franja)}
+                      className="accent-[var(--color-accent)]"
                     />
                     {formatearHoraFranja(franja.inicio)}–{formatearHoraFranja(franja.fin)}
                   </label>
