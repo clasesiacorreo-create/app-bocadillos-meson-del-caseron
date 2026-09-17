@@ -24,7 +24,7 @@ describe('TarjetaArticulo', () => {
     render(<TarjetaArticulo articulo={articulo()} onAbrir={vi.fn()} />)
     expect(screen.getByText('Lomo')).toBeInTheDocument()
     expect(screen.getByText(/Lomo jugoso/)).toBeInTheDocument()
-    expect(screen.getByText(/desde 4,00/)).toBeInTheDocument()
+    expect(screen.getByText(/Desde 4,00/)).toBeInTheDocument()
   })
 
   it('marca los artículos no disponibles y no deja abrirlos', () => {
@@ -52,7 +52,7 @@ describe('TarjetaArticulo', () => {
       ],
     })
     render(<TarjetaArticulo articulo={tamanoBaratoAgotado} onAbrir={vi.fn()} />)
-    expect(screen.getByText(/desde 5,00/)).toBeInTheDocument()
-    expect(screen.queryByText(/desde 4,00/)).not.toBeInTheDocument()
+    expect(screen.getByText(/Desde 5,00/)).toBeInTheDocument()
+    expect(screen.queryByText(/Desde 4,00/)).not.toBeInTheDocument()
   })
 })
