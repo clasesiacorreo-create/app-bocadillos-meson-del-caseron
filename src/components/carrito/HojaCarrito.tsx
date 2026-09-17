@@ -23,7 +23,7 @@ export function HojaCarrito({ reglas, onCerrar }: Props) {
       <h2 className="text-xl font-bold">Tu pedido</h2>
 
       {lineas.length === 0 ? (
-        <p className="mt-6 text-neutral-400">Tu carrito está vacío.</p>
+        <p className="mt-6 text-ink-soft">Tu carrito está vacío.</p>
       ) : (
         <>
           <ul className="mt-4 flex flex-col gap-4">
@@ -33,19 +33,19 @@ export function HojaCarrito({ reglas, onCerrar }: Props) {
                   <div className="flex items-baseline justify-between gap-2">
                     <p className="font-semibold">
                       {linea.nombreArticulo}{' '}
-                      <span className="text-neutral-400">· {linea.nombreTamano}</span>
+                      <span className="text-ink-soft">· {linea.nombreTamano}</span>
                     </p>
                     <span className="shrink-0 font-medium" data-testid="precio-linea">
                       {formatearPrecio(precioLinea(linea))}
                     </span>
                   </div>
                   {linea.extras.length > 0 && (
-                    <p className="text-sm text-neutral-400">
+                    <p className="text-sm text-ink-soft">
                       {linea.extras.map((extra) => extra.nombre).join(', ')}
                     </p>
                   )}
                   {linea.notasLinea && (
-                    <p className="text-sm italic text-amber-500">{linea.notasLinea}</p>
+                    <p className="text-sm italic text-accent">{linea.notasLinea}</p>
                   )}
                   <div className="mt-2 flex items-center gap-3">
                     <button
@@ -89,7 +89,7 @@ export function HojaCarrito({ reglas, onCerrar }: Props) {
           </dl>
 
           {!resumen.alcanzaMinimo && (
-            <p className="mt-4 rounded-lg bg-amber-500/10 p-3 text-sm text-amber-400">
+            <p className="mt-4 rounded-lg bg-accent-soft p-3 text-sm text-accent-dark">
               Te faltan {formatearPrecio(resumen.faltaParaMinimoCentimos)} para llegar al pedido
               mínimo a domicilio.
             </p>
@@ -103,7 +103,7 @@ export function HojaCarrito({ reglas, onCerrar }: Props) {
           )}
 
           {resumen.envioEsGratis && (
-            <p className="mt-4 rounded-lg bg-emerald-500/10 p-3 text-sm text-emerald-400">
+            <p className="mt-4 rounded-lg bg-success-soft p-3 text-sm text-success">
               Envío gratis conseguido.
             </p>
           )}

@@ -61,11 +61,13 @@ export default function PaginaInvitacion() {
     window.location.href = '/panel'
   }
 
-  if (fase === 'verificando') return <p className="p-4">Comprobando la invitación…</p>
-  if (fase === 'error') return <p className="p-4 text-amber-400">{error}</p>
+  if (fase === 'verificando')
+    return <p className="p-4 bg-neutral-950 text-neutral-100">Comprobando la invitación…</p>
+  if (fase === 'error')
+    return <p className="p-4 text-amber-400 bg-neutral-950">{error}</p>
 
   return (
-    <div className="flex flex-col gap-4 p-4">
+    <div className="flex flex-col gap-4 p-4 bg-neutral-950 text-neutral-100">
       <h1 className="text-lg font-semibold">Elige tu contraseña</h1>
       <label className="flex flex-col gap-1">
         <span>Contraseña</span>

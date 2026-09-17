@@ -43,7 +43,7 @@ export function RielCategorias({ categorias, onAbrirArticulo }: Props) {
         })}
       </nav>
 
-      <div className="min-w-0 flex-1 border-l border-border bg-ground px-4 pb-[82px] pt-[18px] lg:px-9 lg:pb-16 lg:pt-8">
+      <div className="min-w-0 flex-1 border-l border-border bg-ground px-4 pb-[96px] pt-[18px] lg:px-9 lg:pt-8">
         <div className="mb-3.5">
           <h2 className="font-display text-[23px] italic text-ink lg:text-[27px]">{categoria?.nombre}</h2>
           <p className="mt-0.5 text-xs text-ink-soft">

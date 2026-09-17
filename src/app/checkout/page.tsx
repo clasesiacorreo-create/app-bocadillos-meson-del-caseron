@@ -7,7 +7,7 @@ export default async function PaginaCheckout() {
   const franjas = generarFranjas(ajustesHorario, new Date())
 
   return (
-    <main className="mx-auto max-w-lg px-4 pb-24">
+    <main className="mx-auto max-w-lg px-4 pb-24 bg-neutral-950 text-neutral-100">
       <header className="py-6">
         <a href="/" className="text-sm text-neutral-400">
           ‹ Volver a la carta

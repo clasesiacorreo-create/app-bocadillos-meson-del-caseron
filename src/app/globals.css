@@ -13,4 +13,6 @@
   --color-accent: #b8481f;
   --color-accent-dark: #93381a;
   --color-accent-soft: rgba(184, 72, 31, 0.1);
+  --color-success: #4d6b3a;
+  --color-success-soft: rgba(77, 107, 58, 0.12);
 }
