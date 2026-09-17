@@ -8,7 +8,7 @@ export default async function PaginaSeguimiento({ params }: { params: Promise<{ 
   if (!estado) notFound()
 
   return (
-    <main className="mx-auto max-w-lg px-4 py-6 bg-neutral-950 text-neutral-100">
+    <main className="mx-auto max-w-[1100px] px-5 py-8 lg:px-16">
       <EstadoPedido estadoInicial={estado} />
     </main>
   )
