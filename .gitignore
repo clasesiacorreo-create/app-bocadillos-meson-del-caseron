@@ -27,3 +27,6 @@ test-results/
 # Sistema
 .DS_Store
 *.log
+
+# Espacio de trabajo de superpowers (ledgers, briefs, reportes de revisión)
+.superpowers/
