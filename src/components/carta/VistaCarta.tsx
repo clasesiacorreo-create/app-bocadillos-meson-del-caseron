@@ -7,7 +7,7 @@ import { useCarrito } from '@/lib/carrito/store'
 import type { ArticuloCarta, Carta } from '@/lib/carta/tipos'
 import type { ReglasPedido } from '@/lib/precios/tipos'
 import { FichaArticulo } from './FichaArticulo'
-import { PestanasCategorias } from './PestanasCategorias'
+import { RielCategorias } from './RielCategorias'
 
 export function VistaCarta({ carta, reglas }: { carta: Carta; reglas: ReglasPedido }) {
   const [abierto, setAbierto] = useState<ArticuloCarta | null>(null)
@@ -22,7 +22,7 @@ export function VistaCarta({ carta, reglas }: { carta: Carta; reglas: ReglasPedi
 
   return (
     <>
-      <PestanasCategorias categorias={carta.categorias} onAbrirArticulo={setAbierto} />
+      <RielCategorias categorias={carta.categorias} onAbrirArticulo={setAbierto} />
 
       {abierto && (
         <FichaArticulo
