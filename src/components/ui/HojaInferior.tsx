@@ -23,16 +23,12 @@ export function HojaInferior({ titulo, onCerrar, children }: Props) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-end">
-      <div
-        className="absolute inset-0 bg-black/60"
-        onClick={onCerrar}
-        aria-hidden="true"
-      />
+      <div className="absolute inset-0 bg-ink/55" onClick={onCerrar} aria-hidden="true" />
       <div
         role="dialog"
         aria-modal="true"
         aria-label={titulo}
-        className="relative max-h-[90vh] w-full overflow-y-auto rounded-t-2xl bg-neutral-900 p-4 pb-8"
+        className="relative max-h-[90vh] w-full overflow-y-auto rounded-t-2xl bg-surface p-4 pb-8 text-ink"
       >
         {children}
       </div>

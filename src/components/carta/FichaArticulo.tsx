@@ -52,16 +52,19 @@ export function FichaArticulo({ articulo, onCerrar, onAnadir }: Props) {
 
   return (
     <HojaInferior titulo={articulo.nombre} onCerrar={onCerrar}>
-      <h2 className="text-xl font-bold">{articulo.nombre}</h2>
-      <p className="mt-1 text-sm text-neutral-400">{articulo.descripcion}</p>
+      <h2 className="font-display text-2xl italic text-ink">{articulo.nombre}</h2>
+      <p className="mt-1 text-sm text-ink-soft">{articulo.descripcion}</p>
 
       <fieldset className="mt-5">
-        <legend className="mb-2 text-sm font-semibold uppercase tracking-wide">Tamaño</legend>
+        <legend className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink-soft">
+          Tamaño
+        </legend>
         <div className="flex flex-col gap-2">
           {articulo.tamanos.map((t) => (
             <label
               key={t.id}
-              className={`flex items-center justify-between rounded-lg border border-neutral-700 p-3
+              className={`flex items-center justify-between rounded-xl border p-3
+                ${t.id === tamanoId ? 'border-accent bg-accent-soft text-accent-dark' : 'border-border'}
                 ${t.disponible ? '' : 'opacity-50'}`}
             >
               <span className="flex items-center gap-3">
@@ -72,10 +75,11 @@ export function FichaArticulo({ articulo, onCerrar, onAnadir }: Props) {
                   checked={t.id === tamanoId}
                   disabled={!t.disponible}
                   onChange={() => setTamanoId(t.id)}
+                  className="accent-[var(--color-accent)]"
                 />
                 {t.nombre}
               </span>
-              <span className="font-medium">{formatearPrecio(t.precioCentimos)}</span>
+              <span className="font-semibold">{formatearPrecio(t.precioCentimos)}</span>
             </label>
           ))}
         </div>
@@ -83,14 +87,14 @@ export function FichaArticulo({ articulo, onCerrar, onAnadir }: Props) {
 
       {extrasDelTamano.length > 0 && (
         <fieldset className="mt-5">
-          <legend className="mb-2 text-sm font-semibold uppercase tracking-wide">
+          <legend className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink-soft">
             Complementos
           </legend>
           <div className="flex flex-col gap-2">
             {extrasDelTamano.map((extra) => (
               <label
                 key={extra.id}
-                className={`flex items-center justify-between rounded-lg border border-neutral-700 p-3
+                className={`flex items-center justify-between rounded-xl border border-border p-3
                   ${extra.disponible ? '' : 'opacity-50'}`}
               >
                 <span className="flex items-center gap-3">
@@ -99,17 +103,18 @@ export function FichaArticulo({ articulo, onCerrar, onAnadir }: Props) {
                     checked={extrasElegidos.includes(extra.id)}
                     disabled={!extra.disponible}
                     onChange={() => alternarExtra(extra.id)}
+                    className="accent-[var(--color-accent)]"
                   />
                   <span>
                     {extra.nombre}
                     {!extra.disponible && (
-                      <span className="ml-2 text-xs uppercase tracking-wide text-amber-500">
+                      <span className="ml-2 text-xs uppercase tracking-wide text-accent">
                         Hoy no disponible
                       </span>
                     )}
                   </span>
                 </span>
-                <span className="font-medium">
+                <span className="font-semibold">
                   {formatearPrecio(extra.precioPorTamanoId[tamanoId])}
                 </span>
               </label>
@@ -119,13 +124,15 @@ export function FichaArticulo({ articulo, onCerrar, onAnadir }: Props) {
       )}
 
       <label className="mt-5 block">
-        <span className="text-sm font-semibold uppercase tracking-wide">Nota para la cocina</span>
+        <span className="text-xs font-semibold uppercase tracking-wide text-ink-soft">
+          Nota para la cocina
+        </span>
         <input
           type="text"
           value={notasLinea}
           onChange={(e) => setNotasLinea(e.target.value)}
           placeholder="sin tomate, poco hecho..."
-          className="mt-2 w-full rounded-lg border border-neutral-700 bg-neutral-800 p-3"
+          className="mt-2 w-full rounded-xl border border-border bg-ground p-3 text-ink"
         />
       </label>
 
@@ -134,18 +141,18 @@ export function FichaArticulo({ articulo, onCerrar, onAnadir }: Props) {
           type="button"
           aria-label="Reducir cantidad"
           onClick={() => setCantidad((c) => Math.max(1, c - 1))}
-          className="h-11 w-11 rounded-full border border-neutral-700 text-xl"
+          className="h-11 w-11 rounded-full border border-border text-xl text-ink"
         >
           −
         </button>
-        <span aria-live="polite" className="w-6 text-center text-lg font-semibold">
+        <span aria-live="polite" className="w-6 text-center text-lg font-semibold text-ink">
           {cantidad}
         </span>
         <button
           type="button"
           aria-label="Aumentar cantidad"
           onClick={() => setCantidad((c) => c + 1)}
-          className="h-11 w-11 rounded-full border border-neutral-700 text-xl"
+          className="h-11 w-11 rounded-full bg-accent text-xl text-surface"
         >
           +
         </button>
@@ -168,7 +175,7 @@ export function FichaArticulo({ articulo, onCerrar, onAnadir }: Props) {
             notasLinea,
           })
         }
-        className="mt-6 h-14 w-full rounded-xl bg-amber-500 text-lg font-bold text-neutral-950"
+        className="mt-6 h-14 w-full rounded-xl bg-accent text-lg font-bold text-surface"
       >
         Añadir · {formatearPrecio(total)}
       </button>
