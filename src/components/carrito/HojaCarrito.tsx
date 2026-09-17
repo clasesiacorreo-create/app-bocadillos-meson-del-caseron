@@ -110,11 +110,10 @@ export function HojaCarrito({ reglas, onCerrar }: Props) {
 
           <button
             type="button"
-            disabled={!resumen.alcanzaMinimo}
             onClick={() => router.push('/checkout')}
             className="mt-6 h-14 w-full rounded-xl bg-amber-500 text-lg font-bold text-neutral-950 disabled:opacity-40"
           >
-            Continuar
+            {resumen.alcanzaMinimo ? 'Continuar' : 'Continuar para recogida en local'}
           </button>
         </>
       )}

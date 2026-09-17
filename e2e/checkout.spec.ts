@@ -6,9 +6,8 @@ import { crearClienteServicio } from '../src/lib/supabase/cliente-servicio'
 test('un cliente completa el pedido y paga con la tarjeta de prueba', async ({ page }) => {
   await page.goto('/')
   await page.getByRole('button', { name: 'Lomo' }).click()
-  // Dos unidades (2 × 5,00 €) para alcanzar el pedido mínimo de 10,00 €: la
-  // barra de carrito comprueba el mínimo asumiendo domicilio, aunque más
-  // tarde en el checkout se elija recogida.
+  // Dos unidades (2 × 5,00 €) para superar el pedido mínimo de 10,00 € y
+  // completar este pedido a domicilio.
   await page.getByRole('button', { name: /Aumentar cantidad/ }).click()
   await page.getByRole('button', { name: /Añadir/ }).click()
   await page.getByRole('button', { name: /Ver pedido/ }).click()

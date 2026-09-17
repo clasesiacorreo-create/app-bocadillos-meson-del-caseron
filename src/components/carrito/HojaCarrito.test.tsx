@@ -33,11 +33,11 @@ beforeEach(() => {
 })
 
 describe('HojaCarrito', () => {
-  it('avisa de cuánto falta para el pedido mínimo', () => {
+  it('avisa de cuánto falta para el pedido mínimo, pero deja continuar para recogida', () => {
     anadir(750)
     render(<HojaCarrito reglas={REGLAS} onCerrar={vi.fn()} />)
     expect(screen.getByText(/Te faltan 2,50/)).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /Continuar/ })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Continuar para recogida en local' })).toBeEnabled()
   })
 
   it('avisa de cuánto falta para el envío gratuito una vez superado el mínimo', () => {

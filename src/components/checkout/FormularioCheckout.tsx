@@ -23,7 +23,14 @@ export function FormularioCheckout({ reglas, franjas }: Props) {
   const quitarExtraDeLinea = useCarrito((estado) => estado.quitarExtraDeLinea)
   const { contacto: contactoGuardado, direccion: direccionGuardada, guardar } = useDatosContacto()
 
+  const resumenDomicilio = calcularResumen(lineas, 'domicilio', reglas)
+  const alcanzaMinimoDomicilio = resumenDomicilio.alcanzaMinimo
+
   const [modoEntrega, setModoEntrega] = useState<ModoEntrega>('domicilio')
+  // Si el carrito no llega al mínimo de domicilio, la recogida es la única
+  // opción posible aunque el usuario hubiera elegido domicilio antes de que
+  // el carrito cambiara (p. ej. al quitar un artículo agotado).
+  const modoEfectivo: ModoEntrega = alcanzaMinimoDomicilio ? modoEntrega : 'recogida'
   const [nombre, setNombre] = useState(contactoGuardado.nombre)
   const [apellidos, setApellidos] = useState(contactoGuardado.apellidos)
   const [telefono, setTelefono] = useState(contactoGuardado.telefono)
@@ -39,7 +46,7 @@ export function FormularioCheckout({ reglas, franjas }: Props) {
   const [error, setError] = useState<ErrorValidacionPedido | null>(null)
   const [errorRed, setErrorRed] = useState(false)
 
-  const resumen = calcularResumen(lineas, modoEntrega, reglas)
+  const resumen = calcularResumen(lineas, modoEfectivo, reglas)
   const franjaLoAntesPosible = franjas.find((f) => f.loAntesPosible)
   const gruposFranjas = agruparFranjasPorDia(franjas, new Date())
 
@@ -49,10 +56,10 @@ export function FormularioCheckout({ reglas, franjas }: Props) {
     setErrorRed(false)
 
     const contacto = { nombre, apellidos, telefono }
-    const direccion = modoEntrega === 'domicilio' ? { calle, numero, piso, cp, ciudad, indicaciones } : null
+    const direccion = modoEfectivo === 'domicilio' ? { calle, numero, piso, cp, ciudad, indicaciones } : null
     guardar(contacto, direccion ?? { calle: '', numero: '', piso: '', cp: '', ciudad: '', indicaciones: '' })
 
-    const errorDatosContacto = validarDatosContacto(modoEntrega, contacto, direccion)
+    const errorDatosContacto = validarDatosContacto(modoEfectivo, contacto, direccion)
     if (errorDatosContacto) {
       setError(errorDatosContacto)
       setEnviando(false)
@@ -65,7 +72,7 @@ export function FormularioCheckout({ reglas, franjas }: Props) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           lineas,
-          modoEntrega,
+          modoEntrega: modoEfectivo,
           contacto,
           direccion,
           franjaSolicitada: {
@@ -114,9 +121,10 @@ export function FormularioCheckout({ reglas, franjas }: Props) {
         <div className="flex gap-2">
           <button
             type="button"
+            disabled={!alcanzaMinimoDomicilio}
             onClick={() => setModoEntrega('domicilio')}
-            className={`flex-1 rounded-lg border p-3 ${
-              modoEntrega === 'domicilio' ? 'border-amber-500 bg-amber-500/10' : 'border-neutral-700'
+            className={`flex-1 rounded-lg border p-3 disabled:opacity-40 ${
+              modoEfectivo === 'domicilio' ? 'border-amber-500 bg-amber-500/10' : 'border-neutral-700'
             }`}
           >
             A domicilio
@@ -125,12 +133,17 @@ export function FormularioCheckout({ reglas, franjas }: Props) {
             type="button"
             onClick={() => setModoEntrega('recogida')}
             className={`flex-1 rounded-lg border p-3 ${
-              modoEntrega === 'recogida' ? 'border-amber-500 bg-amber-500/10' : 'border-neutral-700'
+              modoEfectivo === 'recogida' ? 'border-amber-500 bg-amber-500/10' : 'border-neutral-700'
             }`}
           >
             Recogida en el local
           </button>
         </div>
+        {!alcanzaMinimoDomicilio && (
+          <p className="mt-2 text-sm text-neutral-400">
+            Te faltan {formatearPrecio(resumenDomicilio.faltaParaMinimoCentimos)} para pedir a domicilio.
+          </p>
+        )}
       </fieldset>
 
       <fieldset className="flex flex-col gap-3">
@@ -162,7 +175,7 @@ export function FormularioCheckout({ reglas, franjas }: Props) {
         </label>
       </fieldset>
 
-      {modoEntrega === 'domicilio' && (
+      {modoEfectivo === 'domicilio' && (
         <fieldset className="flex flex-col gap-3">
           <legend className="mb-1 text-sm font-semibold uppercase tracking-wide">Dirección</legend>
           <label className="flex flex-col gap-1">

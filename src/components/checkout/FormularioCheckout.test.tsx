@@ -31,6 +31,20 @@ function anadirLineaValida() {
   })
 }
 
+function anadirLineaBajoMinimo() {
+  useCarrito.getState().anadir({
+    articuloId: 'a-1',
+    nombreArticulo: 'Lomo',
+    imagenUrl: null,
+    tamanoId: 't-b',
+    nombreTamano: 'Bocadillo',
+    precioUnitarioCentimos: 750,
+    extras: [],
+    cantidad: 1,
+    notasLinea: '',
+  })
+}
+
 beforeEach(() => {
   useCarrito.getState().vaciar()
   // El store de datos de contacto es un singleton en memoria (skipHydration:
@@ -163,6 +177,16 @@ describe('FormularioCheckout', () => {
     ).toBeInTheDocument()
     expect(fetchMock).not.toHaveBeenCalled()
     expect(screen.getByRole('button', { name: /Pagar/ })).toBeEnabled()
+  })
+
+  it('con el carrito por debajo del mínimo, preselecciona recogida y bloquea domicilio', async () => {
+    anadirLineaBajoMinimo()
+    render(<FormularioCheckout reglas={REGLAS} franjas={FRANJAS} />)
+
+    expect(screen.getByRole('button', { name: 'Recogida en el local' })).toHaveClass('border-amber-500')
+    expect(screen.getByRole('button', { name: 'A domicilio' })).toBeDisabled()
+    expect(screen.getByText(/Te faltan 2,50.*pedir a domicilio/)).toBeInTheDocument()
+    expect(screen.queryByLabelText('Calle')).not.toBeInTheDocument()
   })
 
   it('no envía el pedido a domicilio sin dirección completa', async () => {
