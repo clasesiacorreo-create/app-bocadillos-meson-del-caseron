@@ -18,11 +18,11 @@ export function BarraCarrito({ reglas, onAbrir }: Props) {
   const resumen = calcularResumen(lineas, 'domicilio', reglas)
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-40 border-t border-neutral-800 bg-neutral-950/95 p-4 backdrop-blur">
+    <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-surface p-4">
       <button
         type="button"
         onClick={onAbrir}
-        className="mx-auto flex h-14 w-full max-w-lg items-center justify-between rounded-xl bg-amber-500 px-5 font-bold text-neutral-950"
+        className="mx-auto flex h-14 w-full max-w-lg items-center justify-between rounded-xl bg-accent px-5 font-bold text-surface"
       >
         <span>
           Ver pedido · {unidades} {unidades === 1 ? 'artículo' : 'artículos'}

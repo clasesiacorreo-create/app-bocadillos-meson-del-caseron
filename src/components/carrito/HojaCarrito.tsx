@@ -52,7 +52,7 @@ export function HojaCarrito({ reglas, onCerrar }: Props) {
                       type="button"
                       aria-label={`Reducir ${linea.nombreArticulo}`}
                       onClick={() => cambiarCantidad(linea.id, linea.cantidad - 1)}
-                      className="h-9 w-9 rounded-full border border-neutral-700"
+                      className="h-9 w-9 rounded-full border border-border"
                     >
                       −
                     </button>
@@ -61,7 +61,7 @@ export function HojaCarrito({ reglas, onCerrar }: Props) {
                       type="button"
                       aria-label={`Aumentar ${linea.nombreArticulo}`}
                       onClick={() => cambiarCantidad(linea.id, linea.cantidad + 1)}
-                      className="h-9 w-9 rounded-full border border-neutral-700"
+                      className="h-9 w-9 rounded-full border border-border"
                     >
                       +
                     </button>
@@ -71,7 +71,7 @@ export function HojaCarrito({ reglas, onCerrar }: Props) {
             ))}
           </ul>
 
-          <dl className="mt-6 flex flex-col gap-1 border-t border-neutral-800 pt-4 text-sm">
+          <dl className="mt-6 flex flex-col gap-1 border-t border-border pt-4 text-sm">
             <div className="flex justify-between">
               <dt>Subtotal</dt>
               <dd data-testid="subtotal">{formatearPrecio(resumen.subtotalCentimos)}</dd>
@@ -111,7 +111,7 @@ export function HojaCarrito({ reglas, onCerrar }: Props) {
           <button
             type="button"
             onClick={() => router.push('/checkout')}
-            className="mt-6 h-14 w-full rounded-xl bg-amber-500 text-lg font-bold text-neutral-950 disabled:opacity-40"
+            className="mt-6 h-14 w-full rounded-xl bg-accent text-lg font-bold text-surface disabled:opacity-40"
           >
             {resumen.alcanzaMinimo ? 'Continuar' : 'Continuar para recogida en local'}
           </button>
