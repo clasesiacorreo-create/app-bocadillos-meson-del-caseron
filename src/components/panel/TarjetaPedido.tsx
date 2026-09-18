@@ -112,35 +112,38 @@ export function TarjetaPedido({ pedido, perfil, franjas, onActualizado, nombresR
     <article
       className={`rounded-xl border p-4 ${
         pedido.franja_confirmada_inicio
-          ? 'border-emerald-600'
+          ? 'border-success bg-success-soft'
           : franjaInminente
-            ? 'border-amber-500 bg-amber-500/10'
-            : 'border-neutral-700'
+            ? 'border-urgente bg-urgente-soft'
+            : 'border-border bg-surface'
       }`}
     >
       <header className="flex items-start justify-between gap-2">
         <div>
-          <p className="text-xs uppercase tracking-wide text-neutral-400">
+          <p className="text-xs uppercase tracking-wide text-ink-soft">
             Pedido {pedido.codigo_publico} ·{' '}
             {new Date(pedido.creado_en).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
           </p>
-          <p className="mt-1 font-semibold">
+          <p className="mt-1 font-semibold text-ink">
             {pedido.franja_solicitada_asap
               ? 'Lo antes posible'
               : `${formatearHoraFranja(pedido.franja_solicitada_inicio)}–${formatearHoraFranja(pedido.franja_solicitada_fin)}`}
             {pedido.franja_confirmada_inicio && pedido.franja_confirmada_fin && (
-              <span className="text-emerald-400">
+              <span className="text-success">
                 {' '}
                 → confirmado {formatearHoraFranja(pedido.franja_confirmada_inicio)}–
                 {formatearHoraFranja(pedido.franja_confirmada_fin)}
               </span>
             )}
           </p>
-          <p className="text-sm text-neutral-400">
+          <p className="text-sm font-semibold text-ink">
             {modoEntrega === 'domicilio' ? 'A domicilio' : 'Recogida en el local'}
           </p>
         </div>
-        <a href={`tel:${pedido.cliente_telefono}`} className="rounded-lg border border-neutral-700 px-3 py-2 text-sm">
+        <a
+          href={`tel:${pedido.cliente_telefono}`}
+          className="rounded-full border border-border bg-surface px-3 py-2 text-sm font-semibold text-ink"
+        >
           {pedido.cliente_telefono}
         </a>
       </header>
@@ -153,24 +156,24 @@ export function TarjetaPedido({ pedido, perfil, franjas, onActualizado, nombresR
               checked={linea.preparada}
               disabled={!puedeOperar || !checklistActivo || enviando}
               onChange={(e) => marcarLinea(linea.id, e.target.checked)}
-              className="mt-1"
+              className="mt-1 accent-[var(--color-accent)]"
             />
-            <span className={linea.preparada ? 'text-neutral-500 line-through' : ''}>
+            <span className={linea.preparada ? 'text-ink-soft line-through' : 'text-ink'}>
               {linea.cantidad}× {linea.nombre_articulo} · {linea.nombre_tamano}
               {linea.pedido_extras.length > 0 && (
-                <span className="text-neutral-400"> ({linea.pedido_extras.map((e) => e.nombre_extra).join(', ')})</span>
+                <span className="text-ink-soft"> ({linea.pedido_extras.map((e) => e.nombre_extra).join(', ')})</span>
               )}
-              {linea.notas_linea && <span className="block text-amber-400">{linea.notas_linea}</span>}
+              {linea.notas_linea && <span className="block text-accent-dark">{linea.notas_linea}</span>}
             </span>
           </li>
         ))}
       </ul>
 
-      {pedido.notas && <p className="mt-3 rounded-lg bg-amber-500/10 p-2 text-sm text-amber-400">{pedido.notas}</p>}
+      {pedido.notas && <p className="mt-3 rounded-lg bg-accent-soft p-2 text-sm text-accent-dark">{pedido.notas}</p>}
 
-      <p className="mt-3 font-bold">{formatearPrecio(pedido.total_centimos)}</p>
+      <p className="mt-3 font-bold text-ink">{formatearPrecio(pedido.total_centimos)}</p>
 
-      {error && <p className="mt-3 rounded-lg bg-amber-500/10 p-2 text-sm text-amber-400">{error}</p>}
+      {error && <p className="mt-3 rounded-lg bg-accent-soft p-2 text-sm text-accent-dark">{error}</p>}
 
       {puedeOperar && (
         <div className="mt-4 flex flex-col gap-2">
@@ -180,7 +183,7 @@ export function TarjetaPedido({ pedido, perfil, franjas, onActualizado, nombresR
                 type="button"
                 disabled={enviando}
                 onClick={aceptarYEmpezar}
-                className="h-12 flex-1 rounded-xl bg-amber-500 font-bold text-neutral-950 disabled:opacity-40"
+                className="h-12 flex-1 rounded-xl bg-accent font-bold text-surface disabled:opacity-40"
               >
                 Aceptar y empezar
               </button>
@@ -188,7 +191,7 @@ export function TarjetaPedido({ pedido, perfil, franjas, onActualizado, nombresR
                 type="button"
                 disabled={enviando}
                 onClick={() => setMostrandoOtrasHoras((v) => !v)}
-                className="h-12 flex-1 rounded-xl border border-neutral-700 font-semibold disabled:opacity-40"
+                className="h-12 flex-1 rounded-xl border border-border bg-surface font-semibold text-ink disabled:opacity-40"
               >
                 Proponer otra hora
               </button>
@@ -207,7 +210,7 @@ export function TarjetaPedido({ pedido, perfil, franjas, onActualizado, nombresR
                     loAntesPosible: false,
                   })
                 }
-                className="h-12 flex-1 rounded-xl bg-amber-500 font-bold text-neutral-950 disabled:opacity-40"
+                className="h-12 flex-1 rounded-xl bg-accent font-bold text-surface disabled:opacity-40"
               >
                 Confirmar {formatearHoraFranja(pedido.franja_solicitada_inicio)}–
                 {formatearHoraFranja(pedido.franja_solicitada_fin)}
@@ -216,7 +219,7 @@ export function TarjetaPedido({ pedido, perfil, franjas, onActualizado, nombresR
                 type="button"
                 disabled={enviando}
                 onClick={() => setMostrandoOtrasHoras((v) => !v)}
-                className="h-12 flex-1 rounded-xl border border-neutral-700 font-semibold disabled:opacity-40"
+                className="h-12 flex-1 rounded-xl border border-border bg-surface font-semibold text-ink disabled:opacity-40"
               >
                 Proponer otra hora
               </button>
@@ -224,10 +227,10 @@ export function TarjetaPedido({ pedido, perfil, franjas, onActualizado, nombresR
           )}
 
           {mostrandoOtrasHoras && (
-            <div className="flex flex-col gap-2 rounded-lg border border-neutral-700 p-3">
+            <div className="flex flex-col gap-2 rounded-lg border border-border p-3">
               {gruposFranjas.map((grupo) => (
                 <div key={grupo.etiqueta} className="flex flex-col gap-1">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-neutral-400">{grupo.etiqueta}</p>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-ink-soft">{grupo.etiqueta}</p>
                   <div className="flex flex-wrap gap-2">
                     {grupo.franjas.map((franja) => (
                       <button
@@ -235,7 +238,7 @@ export function TarjetaPedido({ pedido, perfil, franjas, onActualizado, nombresR
                         type="button"
                         disabled={enviando}
                         onClick={() => confirmarFranja({ inicio: franja.inicio, fin: franja.fin, loAntesPosible: false })}
-                        className="rounded-lg border border-neutral-700 px-3 py-2 text-sm disabled:opacity-40"
+                        className="rounded-lg border border-border bg-surface px-3 py-2 text-sm text-ink disabled:opacity-40"
                       >
                         {formatearHoraFranja(franja.inicio)}–{formatearHoraFranja(franja.fin)}
                       </button>
@@ -251,7 +254,7 @@ export function TarjetaPedido({ pedido, perfil, franjas, onActualizado, nombresR
               type="button"
               disabled={enviando}
               onClick={() => avanzar('en_preparacion')}
-              className="h-12 rounded-xl bg-amber-500 font-bold text-neutral-950 disabled:opacity-40"
+              className="h-12 rounded-xl bg-accent font-bold text-surface disabled:opacity-40"
             >
               Empezar
             </button>
@@ -262,7 +265,7 @@ export function TarjetaPedido({ pedido, perfil, franjas, onActualizado, nombresR
               type="button"
               disabled={enviando}
               onClick={() => avanzar('pendiente_envio')}
-              className="h-12 rounded-xl bg-amber-500 font-bold text-neutral-950 disabled:opacity-40"
+              className="h-12 rounded-xl bg-accent font-bold text-surface disabled:opacity-40"
             >
               Listo
             </button>
@@ -273,18 +276,18 @@ export function TarjetaPedido({ pedido, perfil, franjas, onActualizado, nombresR
               type="button"
               disabled={enviando}
               onClick={() => avanzar('entregado')}
-              className="h-12 rounded-xl bg-amber-500 font-bold text-neutral-950 disabled:opacity-40"
+              className="h-12 rounded-xl bg-accent font-bold text-surface disabled:opacity-40"
             >
               Entregado
             </button>
           )}
 
           {estado === 'pendiente_envio' && modoEntrega === 'domicilio' && (
-            <p className="text-center text-sm text-neutral-400">Esperando a que un repartidor lo recoja.</p>
+            <p className="text-center text-sm text-ink-soft">Esperando a que un repartidor lo recoja.</p>
           )}
 
           {estado === 'en_reparto' && (
-            <p className="text-center text-sm text-neutral-400">
+            <p className="text-center text-sm text-ink-soft">
               En reparto con {pedido.repartidor_id ? (nombresRepartidores[pedido.repartidor_id] ?? 'un repartidor') : 'un repartidor'}
             </p>
           )}
