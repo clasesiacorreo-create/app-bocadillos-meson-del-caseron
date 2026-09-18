@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
+import Link from 'next/link'
 import { mensajeDeError } from '@/lib/panel/erroresApi'
 import { parsearPrecio } from '@/lib/dinero'
 
@@ -141,28 +142,35 @@ export function FormularioArticulo({ categorias, tamanos, extras, articuloInicia
 
   return (
     <div className="flex flex-col gap-6">
+      <header className="flex flex-col gap-2">
+        <Link href="/panel/carta/articulos" className="text-sm font-semibold text-ink-soft">
+          ‹ Artículos
+        </Link>
+        <h1 className="font-display text-2xl italic text-ink">{editando ? 'Editar artículo' : 'Nuevo artículo'}</h1>
+      </header>
+
       <label className="flex flex-col gap-1">
-        <span>Nombre</span>
+        <span className="text-ink">Nombre</span>
         <input
           value={nombre}
           onChange={(e) => setNombre(e.target.value)}
-          className="rounded-lg border border-neutral-700 bg-neutral-800 p-3"
+          className="rounded-lg border border-border bg-surface p-3 text-ink"
         />
       </label>
       <label className="flex flex-col gap-1">
-        <span>Descripción</span>
+        <span className="text-ink">Descripción</span>
         <textarea
           value={descripcion}
           onChange={(e) => setDescripcion(e.target.value)}
-          className="rounded-lg border border-neutral-700 bg-neutral-800 p-3"
+          className="rounded-lg border border-border bg-surface p-3 text-ink"
         />
       </label>
       <label className="flex flex-col gap-1">
-        <span>Categoría</span>
+        <span className="text-ink">Categoría</span>
         <select
           value={categoriaId}
           onChange={(e) => setCategoriaId(e.target.value)}
-          className="rounded-lg border border-neutral-700 bg-neutral-800 p-3"
+          className="rounded-lg border border-border bg-surface p-3 text-ink"
         >
           {categorias.map((c) => (
             <option key={c.id} value={c.id}>
@@ -174,8 +182,8 @@ export function FormularioArticulo({ categorias, tamanos, extras, articuloInicia
 
       {editando ? (
         <div className="flex flex-col gap-2">
-          <span>Foto</span>
-          <div className="relative h-32 w-32 overflow-hidden rounded-lg bg-amber-900/30">
+          <span className="text-ink">Foto</span>
+          <div className="relative h-32 w-32 overflow-hidden rounded-lg bg-accent-soft">
             {imagenUrl && <Image src={imagenUrl} alt="" fill sizes="128px" className="object-cover" />}
           </div>
           <input
@@ -187,31 +195,36 @@ export function FormularioArticulo({ categorias, tamanos, extras, articuloInicia
             type="button"
             disabled={!archivoImagen || guardando}
             onClick={subirImagen}
-            className="self-start rounded-lg border border-neutral-700 px-3 py-1.5 text-sm disabled:opacity-40"
+            className="self-start rounded-full border border-border bg-surface px-3 py-1.5 text-sm font-semibold text-ink disabled:opacity-40"
           >
             Subir foto
           </button>
         </div>
       ) : (
-        <p className="text-sm text-neutral-400">Podrás añadir la foto después de crear el artículo.</p>
+        <p className="text-sm text-ink-soft">Podrás añadir la foto después de crear el artículo.</p>
       )}
 
       <fieldset className="flex flex-col gap-3">
-        <legend className="mb-1 text-sm font-semibold uppercase tracking-wide">Tamaños</legend>
+        <legend className="mb-1 text-sm font-semibold uppercase tracking-wide text-ink-soft">Tamaños</legend>
         {tamanosForm.map((t) => {
           const nombreTamano = tamanos.find((tam) => tam.id === t.tamanoId)?.nombre ?? ''
           return (
-            <div key={t.tamanoId} className="flex items-center gap-3 rounded-lg border border-neutral-700 p-3">
+            <div key={t.tamanoId} className="rounded-xl border border-border bg-surface p-3">
               <label className="flex items-center gap-2">
-                <input type="checkbox" checked={t.ofrecido} onChange={() => alternarTamano(t.tamanoId)} />
-                {nombreTamano}
+                <input
+                  type="checkbox"
+                  checked={t.ofrecido}
+                  onChange={() => alternarTamano(t.tamanoId)}
+                  className="accent-[var(--color-accent)]"
+                />
+                <span className="font-semibold text-ink">{nombreTamano}</span>
               </label>
               {t.ofrecido && (
                 <input
                   value={t.precioTexto}
                   onChange={(e) => cambiarPrecioTamano(t.tamanoId, e.target.value)}
                   placeholder="Precio (€)"
-                  className="w-24 rounded-lg border border-neutral-700 bg-neutral-800 p-2"
+                  className="mt-2 ml-6 w-24 rounded-lg border border-border bg-surface p-2 text-ink"
                 />
               )}
             </div>
@@ -220,23 +233,28 @@ export function FormularioArticulo({ categorias, tamanos, extras, articuloInicia
       </fieldset>
 
       <fieldset className="flex flex-col gap-2">
-        <legend className="mb-1 text-sm font-semibold uppercase tracking-wide">Complementos</legend>
+        <legend className="mb-1 text-sm font-semibold uppercase tracking-wide text-ink-soft">Complementos</legend>
         {extras.map((extra) => (
           <label key={extra.id} className="flex items-center gap-2">
-            <input type="checkbox" checked={extraIds.includes(extra.id)} onChange={() => alternarExtra(extra.id)} />
-            {extra.nombre}
+            <input
+              type="checkbox"
+              checked={extraIds.includes(extra.id)}
+              onChange={() => alternarExtra(extra.id)}
+              className="accent-[var(--color-accent)]"
+            />
+            <span className="text-ink">{extra.nombre}</span>
           </label>
         ))}
       </fieldset>
 
-      {error && <p className="rounded-lg bg-amber-500/10 p-3 text-sm text-amber-400">{error}</p>}
+      {error && <p className="rounded-lg bg-accent-soft p-3 text-sm text-accent-dark">{error}</p>}
 
       <div className="flex gap-2">
         <button
           type="button"
           disabled={guardando || !nombre}
           onClick={guardar}
-          className="h-12 flex-1 rounded-xl bg-amber-500 font-bold text-neutral-950 disabled:opacity-40"
+          className="h-12 flex-1 rounded-xl bg-accent font-bold text-surface disabled:opacity-40"
         >
           {editando ? 'Guardar cambios' : 'Crear artículo'}
         </button>
@@ -245,7 +263,7 @@ export function FormularioArticulo({ categorias, tamanos, extras, articuloInicia
             type="button"
             disabled={guardando}
             onClick={eliminar}
-            className="h-12 rounded-xl border border-neutral-700 px-4 font-semibold text-amber-400 disabled:opacity-40"
+            className="h-12 rounded-full border border-peligro px-4 font-semibold text-peligro disabled:opacity-40"
           >
             Dar de baja
           </button>
