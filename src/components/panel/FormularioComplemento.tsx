@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { mensajeDeError } from '@/lib/panel/erroresApi'
@@ -96,84 +97,94 @@ export function FormularioComplemento({ tamanos, categorias, complementoInicial 
 
   return (
     <div className="flex flex-col gap-6">
+      <header className="flex flex-col gap-2">
+        <Link href="/panel/carta/complementos" className="text-sm font-semibold text-ink-soft">
+          ‹ Complementos
+        </Link>
+        <h1 className="font-display text-2xl italic text-ink">
+          {editando ? 'Editar complemento' : 'Nuevo complemento'}
+        </h1>
+      </header>
+
       <label className="flex flex-col gap-1">
-        <span>Nombre</span>
+        <span className="text-ink">Nombre</span>
         <input
           value={nombre}
           onChange={(e) => setNombre(e.target.value)}
-          className="rounded-lg border border-neutral-700 bg-neutral-800 p-3"
+          className="rounded-lg border border-border bg-surface p-3 text-ink"
         />
       </label>
       <label className="flex flex-col gap-1">
-        <span>Descripción</span>
+        <span className="text-ink">Descripción</span>
         <textarea
           value={descripcion}
           onChange={(e) => setDescripcion(e.target.value)}
-          className="rounded-lg border border-neutral-700 bg-neutral-800 p-3"
+          className="rounded-lg border border-border bg-surface p-3 text-ink"
         />
       </label>
 
       <fieldset className="flex flex-col gap-3">
-        <legend className="mb-1 text-sm font-semibold uppercase tracking-wide">
+        <legend className="mb-1 text-sm font-semibold uppercase tracking-wide text-ink-soft">
           Precio por tamaño (vacío = no se ofrece)
         </legend>
         {tamanos.map((tamano) => (
           <label key={tamano.id} className="flex items-center justify-between gap-3">
-            <span>{tamano.nombre}</span>
+            <span className="text-ink">{tamano.nombre}</span>
             <input
               aria-label={tamano.nombre}
               value={precios[tamano.id]}
               onChange={(e) => setPrecios((actual) => ({ ...actual, [tamano.id]: e.target.value }))}
               placeholder="€"
-              className="w-24 rounded-lg border border-neutral-700 bg-neutral-800 p-2"
+              className="w-24 rounded-lg border border-border bg-surface p-2 text-ink"
             />
           </label>
         ))}
       </fieldset>
 
       <fieldset className="flex flex-col gap-3">
-        <legend className="mb-1 text-sm font-semibold uppercase tracking-wide">Productos</legend>
+        <legend className="mb-1 text-sm font-semibold uppercase tracking-wide text-ink-soft">Productos</legend>
         <div className="flex gap-2">
           <button
             type="button"
             onClick={() => setArticuloIds(categorias.flatMap((c) => c.articulos.map((a) => a.id)))}
-            className="rounded-lg border border-neutral-700 px-3 py-1.5 text-sm"
+            className="rounded-full border border-border bg-surface px-3 py-1.5 text-sm font-semibold text-ink-soft"
           >
             Seleccionar todos
           </button>
           <button
             type="button"
             onClick={() => setArticuloIds([])}
-            className="rounded-lg border border-neutral-700 px-3 py-1.5 text-sm"
+            className="rounded-full border border-border bg-surface px-3 py-1.5 text-sm font-semibold text-ink-soft"
           >
             Ninguno
           </button>
         </div>
         {categorias.map((categoria) => (
           <div key={categoria.id} className="flex flex-col gap-1">
-            <p className="text-sm font-medium text-neutral-400">{categoria.nombre}</p>
+            <p className="font-display text-base italic text-ink">{categoria.nombre}</p>
             {categoria.articulos.map((articulo) => (
               <label key={articulo.id} className="flex items-center gap-2">
                 <input
                   type="checkbox"
                   checked={articuloIds.includes(articulo.id)}
                   onChange={() => alternarArticulo(articulo.id)}
+                  className="accent-[var(--color-accent)]"
                 />
-                {articulo.nombre}
+                <span className="text-ink">{articulo.nombre}</span>
               </label>
             ))}
           </div>
         ))}
       </fieldset>
 
-      {error && <p className="rounded-lg bg-amber-500/10 p-3 text-sm text-amber-400">{error}</p>}
+      {error && <p className="rounded-lg bg-accent-soft p-3 text-sm text-accent-dark">{error}</p>}
 
       <div className="flex gap-2">
         <button
           type="button"
           disabled={guardando || !nombre}
           onClick={guardar}
-          className="h-12 flex-1 rounded-xl bg-amber-500 font-bold text-neutral-950 disabled:opacity-40"
+          className="h-12 flex-1 rounded-xl bg-accent font-bold text-surface disabled:opacity-40"
         >
           {editando ? 'Guardar cambios' : 'Crear complemento'}
         </button>
@@ -182,7 +193,7 @@ export function FormularioComplemento({ tamanos, categorias, complementoInicial 
             type="button"
             disabled={guardando}
             onClick={eliminar}
-            className="h-12 rounded-xl border border-neutral-700 px-4 font-semibold text-amber-400 disabled:opacity-40"
+            className="h-12 rounded-full border border-peligro px-4 font-semibold text-peligro disabled:opacity-40"
           >
             Dar de baja
           </button>

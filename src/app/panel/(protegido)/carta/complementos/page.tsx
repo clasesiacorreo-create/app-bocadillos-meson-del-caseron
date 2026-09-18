@@ -14,7 +14,7 @@ export default async function PaginaListadoComplementos() {
     <div className="flex flex-col gap-4">
       <Link
         href="/panel/carta/complementos/nuevo"
-        className="self-start rounded-lg bg-amber-500 px-4 py-2 font-bold text-neutral-950"
+        className="self-start rounded-full bg-accent px-4 py-2 font-bold text-surface"
       >
         Nuevo complemento
       </Link>
@@ -23,7 +23,7 @@ export default async function PaginaListadoComplementos() {
           <li key={extra.id}>
             <Link
               href={`/panel/carta/complementos/${extra.id}`}
-              className="block rounded-lg border border-neutral-700 p-3"
+              className="block rounded-xl border border-border bg-surface p-3 text-ink"
             >
               {extra.nombre}
             </Link>
