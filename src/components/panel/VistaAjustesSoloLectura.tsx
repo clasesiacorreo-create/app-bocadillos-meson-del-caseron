@@ -15,12 +15,12 @@ export function VistaAjustesSoloLectura({ ajustes }: { ajustes: Ajustes }) {
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <p className="font-semibold">{ajustes.nombreRestaurante}</p>
-        <p className="text-sm text-neutral-400">
+        <p className="font-semibold text-ink">{ajustes.nombreRestaurante}</p>
+        <p className="text-sm text-ink-soft">
           {ajustes.telefono} · {ajustes.direccion}
         </p>
       </div>
-      <dl className="flex flex-col gap-1 text-sm">
+      <dl className="flex flex-col gap-1 text-sm text-ink">
         <div className="flex justify-between">
           <dt>Envío</dt>
           <dd>{formatearPrecio(ajustes.envioCentimos)}</dd>
@@ -36,7 +36,7 @@ export function VistaAjustesSoloLectura({ ajustes }: { ajustes: Ajustes }) {
           </dd>
         </div>
       </dl>
-      <dl className="flex flex-col gap-1 text-sm">
+      <dl className="flex flex-col gap-1 text-sm text-ink">
         {DIAS.map((dia) => (
           <div key={dia.clave} className="flex justify-between">
             <dt>{dia.etiqueta}</dt>
