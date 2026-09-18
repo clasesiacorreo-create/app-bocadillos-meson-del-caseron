@@ -25,31 +25,35 @@ export function FormularioLogin() {
   return (
     <div className="flex flex-col gap-4">
       <label className="flex flex-col gap-1">
-        <span>Email</span>
+        <span className="text-ink">Email</span>
         <input
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="rounded-lg border border-neutral-700 bg-neutral-800 p-3"
+          className="rounded-lg border border-border bg-ground p-3 text-ink"
         />
       </label>
       <label className="flex flex-col gap-1">
-        <span>Contraseña</span>
+        <span className="text-ink">Contraseña</span>
         <input
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="rounded-lg border border-neutral-700 bg-neutral-800 p-3"
+          className="rounded-lg border border-border bg-ground p-3 text-ink"
         />
       </label>
 
-      {error && <p className="text-sm text-amber-400">Email o contraseña incorrectos.</p>}
+      {error && (
+        <p className="rounded-lg bg-accent-soft p-3 text-center text-sm font-semibold text-accent-dark">
+          Email o contraseña incorrectos.
+        </p>
+      )}
 
       <button
         type="button"
         disabled={enviando}
         onClick={iniciarSesion}
-        className="h-14 rounded-xl bg-amber-500 text-lg font-bold text-neutral-950 disabled:opacity-40"
+        className="h-14 rounded-full bg-accent text-lg font-bold text-surface disabled:opacity-40"
       >
         Entrar
       </button>

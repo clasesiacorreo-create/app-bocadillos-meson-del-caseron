@@ -61,29 +61,27 @@ export default function PaginaInvitacion() {
     window.location.href = '/panel'
   }
 
-  if (fase === 'verificando')
-    return <p className="p-4 bg-neutral-950 text-neutral-100">Comprobando la invitación…</p>
-  if (fase === 'error')
-    return <p className="p-4 text-amber-400 bg-neutral-950">{error}</p>
+  if (fase === 'verificando') return <p className="p-4 text-ink">Comprobando la invitación…</p>
+  if (fase === 'error') return <p className="p-4 text-accent-dark">{error}</p>
 
   return (
-    <div className="flex flex-col gap-4 p-4 bg-neutral-950 text-neutral-100">
-      <h1 className="text-lg font-semibold">Elige tu contraseña</h1>
+    <div className="mx-auto flex min-h-dvh max-w-sm flex-col justify-center gap-4 px-4">
+      <h1 className="font-display text-2xl italic text-ink">Elige tu contraseña</h1>
       <label className="flex flex-col gap-1">
-        <span>Contraseña</span>
+        <span className="text-ink">Contraseña</span>
         <input
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="rounded-lg border border-neutral-700 bg-neutral-800 p-3"
+          className="rounded-lg border border-border bg-ground p-3 text-ink"
         />
       </label>
-      {error && <p className="text-sm text-amber-400">{error}</p>}
+      {error && <p className="text-sm text-accent-dark">{error}</p>}
       <button
         type="button"
         disabled={fase === 'guardando' || password.length < 8}
         onClick={guardarContrasena}
-        className="h-14 rounded-xl bg-amber-500 text-lg font-bold text-neutral-950 disabled:opacity-40"
+        className="h-14 rounded-full bg-accent text-lg font-bold text-surface disabled:opacity-40"
       >
         Entrar
       </button>
