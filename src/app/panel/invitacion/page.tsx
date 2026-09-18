@@ -76,7 +76,7 @@ export default function PaginaInvitacion() {
           className="rounded-lg border border-border bg-ground p-3 text-ink"
         />
       </label>
-      {error && <p className="text-sm text-accent-dark">{error}</p>}
+      {error && <p className="rounded-lg bg-accent-soft p-3 text-sm text-accent-dark">{error}</p>}
       <button
         type="button"
         disabled={fase === 'guardando' || password.length < 8}
