@@ -8,10 +8,10 @@ type FilaProps = {
   etiqueta: string
   disponibleInicial: boolean
   endpoint: string
-  indentado?: boolean
+  pequeno?: boolean
 }
 
-function FilaDisponibilidad({ etiqueta, disponibleInicial, endpoint, indentado }: FilaProps) {
+function FilaDisponibilidad({ etiqueta, disponibleInicial, endpoint, pequeno }: FilaProps) {
   const [disponible, setDisponible] = useState(disponibleInicial)
   const [enviando, setEnviando] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -33,11 +33,17 @@ function FilaDisponibilidad({ etiqueta, disponibleInicial, endpoint, indentado }
     setEnviando(false)
   }
 
+  const pistaClase = pequeno ? 'h-5 w-[34px]' : 'h-6 w-[42px]'
+  const pulgarClase = pequeno ? 'h-4 w-4' : 'h-5 w-5'
+  const pulgarActivo = pequeno ? 'left-[16px]' : 'left-[20px]'
+
   return (
-    <div className={`flex items-center justify-between gap-2 py-2 ${indentado ? 'pl-6' : ''}`}>
-      <span className={disponible ? '' : 'text-neutral-500'}>{etiqueta}</span>
+    <div className="flex items-center justify-between gap-2">
+      <span className={`${pequeno ? 'text-xs' : 'text-sm'} ${disponible ? 'text-ink' : 'text-ink-soft'}`}>
+        {etiqueta}
+      </span>
       <div className="flex items-center gap-2">
-        {error && <span className="text-xs text-amber-400">{error}</span>}
+        {error && <span className="text-xs text-accent-dark">{error}</span>}
         <button
           type="button"
           role="switch"
@@ -45,12 +51,11 @@ function FilaDisponibilidad({ etiqueta, disponibleInicial, endpoint, indentado }
           aria-label={etiqueta}
           disabled={enviando}
           onClick={alternar}
-          className={`h-7 w-12 rounded-full border transition disabled:opacity-40 ${
-            disponible ? 'border-emerald-600 bg-emerald-600/30' : 'border-neutral-700 bg-neutral-800'
-          }`}
+          className={`relative shrink-0 rounded-full transition disabled:opacity-40 ${pistaClase}`}
+          style={{ backgroundColor: disponible ? 'var(--color-accent)' : 'rgba(43,32,21,0.18)' }}
         >
           <span
-            className={`block h-5 w-5 rounded-full bg-white transition ${disponible ? 'translate-x-6' : 'translate-x-1'}`}
+            className={`absolute top-0.5 left-0.5 block rounded-full bg-white transition ${pulgarClase} ${disponible ? pulgarActivo : ''}`}
           />
         </button>
       </div>
@@ -74,24 +79,28 @@ export function VistaDisponibilidad({ carta }: Props) {
     <div className="flex flex-col gap-8">
       {carta.categorias.map((categoria) => (
         <section key={categoria.id}>
-          <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-neutral-400">{categoria.nombre}</h2>
-          <div className="divide-y divide-neutral-800">
+          <h2 className="mb-2 font-display text-lg italic text-ink">{categoria.nombre}</h2>
+          <div className="flex flex-col gap-2">
             {categoria.articulos.map((articulo) => (
-              <div key={articulo.id}>
+              <div key={articulo.id} className="rounded-xl border border-border bg-surface p-3">
                 <FilaDisponibilidad
                   etiqueta={articulo.nombre}
                   disponibleInicial={articulo.disponible}
                   endpoint={`/api/panel/carta/articulos/${articulo.id}/disponibilidad`}
                 />
-                {articulo.tamanos.map((tamano) => (
-                  <FilaDisponibilidad
-                    key={tamano.id}
-                    etiqueta={tamano.nombre}
-                    disponibleInicial={tamano.disponible}
-                    endpoint={`/api/panel/carta/articulos/${articulo.id}/tamanos/${tamano.id}/disponibilidad`}
-                    indentado
-                  />
-                ))}
+                {articulo.tamanos.length > 0 && (
+                  <div className="mt-2.5 flex flex-col gap-1.5 pl-1">
+                    {articulo.tamanos.map((tamano) => (
+                      <FilaDisponibilidad
+                        key={tamano.id}
+                        etiqueta={tamano.nombre}
+                        disponibleInicial={tamano.disponible}
+                        endpoint={`/api/panel/carta/articulos/${articulo.id}/tamanos/${tamano.id}/disponibilidad`}
+                        pequeno
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -99,15 +108,16 @@ export function VistaDisponibilidad({ carta }: Props) {
       ))}
 
       <section>
-        <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-neutral-400">Complementos</h2>
-        <div className="divide-y divide-neutral-800">
+        <h2 className="mb-2 font-display text-lg italic text-ink">Complementos</h2>
+        <div className="flex flex-col gap-2">
           {[...extrasUnicos.values()].map((extra) => (
-            <FilaDisponibilidad
-              key={extra.id}
-              etiqueta={extra.nombre}
-              disponibleInicial={extra.disponible}
-              endpoint={`/api/panel/carta/complementos/${extra.id}/disponibilidad`}
-            />
+            <div key={extra.id} className="rounded-xl border border-border bg-surface p-3">
+              <FilaDisponibilidad
+                etiqueta={extra.nombre}
+                disponibleInicial={extra.disponible}
+                endpoint={`/api/panel/carta/complementos/${extra.id}/disponibilidad`}
+              />
+            </div>
           ))}
         </div>
       </section>

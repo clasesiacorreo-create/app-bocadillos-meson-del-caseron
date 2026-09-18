@@ -15,10 +15,16 @@ export default async function PaginaDisponibilidad() {
     <div className="flex flex-col gap-4">
       {perfil.rol === 'admin' && (
         <div className="flex gap-2">
-          <Link href="/panel/carta/articulos" className="rounded-lg border border-neutral-700 px-3 py-2 text-sm">
+          <Link
+            href="/panel/carta/articulos"
+            className="flex-1 rounded-xl border border-border bg-surface px-3 py-2.5 text-center text-sm font-semibold text-ink"
+          >
             Editar artículos
           </Link>
-          <Link href="/panel/carta/complementos" className="rounded-lg border border-neutral-700 px-3 py-2 text-sm">
+          <Link
+            href="/panel/carta/complementos"
+            className="flex-1 rounded-xl border border-border bg-surface px-3 py-2.5 text-center text-sm font-semibold text-ink"
+          >
             Editar complementos
           </Link>
         </div>
