@@ -73,14 +73,16 @@ export function VistaReparto({ perfil, pedidosIniciales }: Props) {
 
   return (
     <div className="flex flex-col gap-4">
-      <nav className="flex gap-2 overflow-x-auto">
+      <nav className="flex gap-2">
         {PESTANAS.map((pestana) => (
           <button
             key={pestana.id}
             type="button"
             onClick={() => setPestanaActiva(pestana.id)}
-            className={`shrink-0 rounded-full border px-4 py-2 text-sm font-semibold ${
-              pestanaActiva === pestana.id ? 'border-amber-500 bg-amber-500/10' : 'border-neutral-700'
+            className={`flex-1 rounded-full border px-4 py-2 text-sm font-semibold ${
+              pestanaActiva === pestana.id
+                ? 'border-accent bg-accent-soft text-accent-dark'
+                : 'border-border bg-surface text-ink-soft'
             }`}
           >
             {pestana.etiqueta} ({pedidosDe(pestana.id).length})
@@ -89,7 +91,7 @@ export function VistaReparto({ perfil, pedidosIniciales }: Props) {
       </nav>
 
       <div className="flex flex-col gap-4">
-        {pedidosDeLaPestana.length === 0 && <p className="text-sm text-neutral-400">No hay pedidos aquí.</p>}
+        {pedidosDeLaPestana.length === 0 && <p className="text-sm text-ink-soft">No hay pedidos aquí.</p>}
         {pedidosDeLaPestana.map((pedido) => (
           <TarjetaReparto
             key={pedido.id}
