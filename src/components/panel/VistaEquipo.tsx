@@ -101,7 +101,7 @@ export function VistaEquipo({ equipo }: Props) {
           </select>
         </label>
 
-        {error && <p className="text-sm text-accent-dark">{error}</p>}
+        {error && <p className="rounded-lg bg-accent-soft p-3 text-sm text-accent-dark">{error}</p>}
         {invitado && (
           <p className="rounded-lg bg-success-soft p-3 text-center text-sm font-semibold text-success">
             Invitación enviada a {invitado}.
