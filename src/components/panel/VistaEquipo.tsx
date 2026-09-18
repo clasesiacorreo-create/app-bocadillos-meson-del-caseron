@@ -50,42 +50,48 @@ export function VistaEquipo({ equipo }: Props) {
         {equipo.map((miembro) => (
           <li
             key={miembro.userId}
-            className="flex items-center justify-between rounded-lg border border-neutral-700 p-3"
+            className="flex items-center justify-between rounded-xl border border-border bg-surface p-3"
           >
             <div>
-              <p className="font-semibold">{miembro.nombre}</p>
-              <p className="text-sm text-neutral-400">{miembro.email}</p>
+              <p className="font-semibold text-ink">{miembro.nombre}</p>
+              <p className="text-sm text-ink-soft">{miembro.email}</p>
             </div>
-            <span className="text-xs uppercase tracking-wide text-neutral-400">{miembro.rol}</span>
+            <span
+              className={`text-xs font-bold uppercase tracking-wide ${
+                miembro.rol === 'admin' ? 'text-accent-dark' : 'text-ink-soft'
+              }`}
+            >
+              {miembro.rol}
+            </span>
           </li>
         ))}
       </ul>
 
-      <fieldset className="flex flex-col gap-3 rounded-lg border border-neutral-700 p-3">
-        <legend className="px-1 text-sm font-semibold uppercase tracking-wide">Invitar</legend>
+      <fieldset className="flex flex-col gap-3 rounded-xl border border-border p-3">
+        <legend className="px-1 text-sm font-semibold uppercase tracking-wide text-ink-soft">Invitar</legend>
         <label className="flex flex-col gap-1">
-          <span>Email</span>
+          <span className="text-ink">Email</span>
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="rounded-lg border border-neutral-700 bg-neutral-800 p-3"
+            className="rounded-lg border border-border bg-surface p-3 text-ink"
           />
         </label>
         <label className="flex flex-col gap-1">
-          <span>Nombre</span>
+          <span className="text-ink">Nombre</span>
           <input
             value={nombre}
             onChange={(e) => setNombre(e.target.value)}
-            className="rounded-lg border border-neutral-700 bg-neutral-800 p-3"
+            className="rounded-lg border border-border bg-surface p-3 text-ink"
           />
         </label>
         <label className="flex flex-col gap-1">
-          <span>Rol</span>
+          <span className="text-ink">Rol</span>
           <select
             value={rol}
             onChange={(e) => setRol(e.target.value as RolStaff)}
-            className="rounded-lg border border-neutral-700 bg-neutral-800 p-3"
+            className="rounded-lg border border-border bg-surface p-3 text-ink"
           >
             {ROLES.map((r) => (
               <option key={r.valor} value={r.valor}>
@@ -95,14 +101,18 @@ export function VistaEquipo({ equipo }: Props) {
           </select>
         </label>
 
-        {error && <p className="text-sm text-amber-400">{error}</p>}
-        {invitado && <p className="text-sm text-emerald-400">Invitación enviada a {invitado}.</p>}
+        {error && <p className="text-sm text-accent-dark">{error}</p>}
+        {invitado && (
+          <p className="rounded-lg bg-success-soft p-3 text-center text-sm font-semibold text-success">
+            Invitación enviada a {invitado}.
+          </p>
+        )}
 
         <button
           type="button"
           disabled={enviando || !email || !nombre}
           onClick={invitar}
-          className="h-12 rounded-xl bg-amber-500 font-bold text-neutral-950 disabled:opacity-40"
+          className="h-12 rounded-full bg-accent font-bold text-surface disabled:opacity-40"
         >
           Invitar
         </button>
