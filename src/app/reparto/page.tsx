@@ -14,11 +14,11 @@ export default async function PaginaReparto() {
   const pedidos = await listarPedidosPanel(supabaseSesion)
 
   return (
-    <div className="min-h-dvh pb-10 bg-neutral-950 text-neutral-100">
-      <header className="flex items-center justify-between border-b border-neutral-800 px-4 py-3">
+    <div className="min-h-dvh pb-10">
+      <header className="flex items-center justify-between border-b border-border px-4 py-3">
         <div>
-          <p className="font-semibold">{perfil.nombre}</p>
-          <p className="text-xs uppercase tracking-wide text-neutral-400">{perfil.rol}</p>
+          <p className="font-bold text-ink">{perfil.nombre}</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-ink-soft">{perfil.rol}</p>
         </div>
         <CerrarSesionBoton />
       </header>

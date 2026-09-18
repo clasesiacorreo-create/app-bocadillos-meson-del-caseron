@@ -10,7 +10,11 @@ export function CerrarSesionBoton() {
   }
 
   return (
-    <button type="button" onClick={cerrarSesion} className="rounded-lg border border-neutral-700 px-3 py-2 text-sm">
+    <button
+      type="button"
+      onClick={cerrarSesion}
+      className="rounded-full border border-border bg-surface px-3 py-2 text-sm font-semibold text-ink-soft"
+    >
       Cerrar sesión
     </button>
   )
